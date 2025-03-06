@@ -1,0 +1,121 @@
+/* Button styles */
+
+button, .btn {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px 0;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: visible;
+  z-index: 2;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+}
+
+button:hover, .btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Fix for any Bootstrap overrides */
+button[type="button"] {
+  appearance: button;
+  -webkit-appearance: button;
+}
+
+/* Fix active states on buttons */
+.btn:active,
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(49, 132, 253, 0.5);
+}
+
+/* Fix para botões em input groups que estão quebrando em algumas telas */
+.input-group {
+  flex-wrap: nowrap !important;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group .btn {
+  flex: 0 0 auto; /* Evita que o botão seja redimensionado */
+  white-space: nowrap;
+  height: 100%; /* Garante que o botão tenha a mesma altura do input */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px; /* Garante um tamanho mínimo para os botões */
+}
+
+/* Botões menores e mais compactos para telas pequenas */
+@media (max-width: 767px) {
+  .input-group .btn {
+    padding: 0.375rem 0.5rem; /* Tamanho menor para economizar espaço */
+    font-size: 0.875rem; /* Fonte menor para economizar espaço */
+    min-width: 50px;
+  }
+  
+  .input-group-text {
+    padding: 0.375rem 0.5rem;
+  }
+}
+
+/* Fix para quantidade excessiva de espaço em botões */
+.btn {
+  padding: 0.375rem 0.75rem;
+}
+
+/* Spymaster controls */
+#spymaster-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap; /* Evitar quebra de linha */
+  gap: 8px;
+  padding: 8px;
+}
+
+#clue-input {
+  flex: 1;
+  min-width: 0; /* Importante para permitir que o input encolha */
+}
+
+#clue-number-input {
+  width: 60px;
+  min-width: 50px; /* Largura mínima para manter visibilidade */
+  text-align: center;
+}
+
+/* End screen buttons */
+#play-again-btn, #return-lobby-btn {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+/* End turn button styling */
+#end-turn-btn {
+  padding: 10px 20px;
+  font-weight: bold;
+  animation: pulse-subtle 2s infinite;
+}
+
+@keyframes pulse-subtle {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}

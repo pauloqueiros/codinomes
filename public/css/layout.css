@@ -1,0 +1,186 @@
+/* Layout structure styles */
+
+#app {
+  max-width: none;
+  padding: 0; /* Remover padding que estava causando scroll */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 15px; /* Reduzido ainda mais para otimizar espaço */
+  flex-shrink: 0;
+}
+
+.screen {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px; /* Reduzido para economizar espaço */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 10px; /* Espaço pequeno no topo */
+  margin-bottom: 10px;
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* Ajustar visibilidade dos containers */
+.screen-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen-container.d-none {
+  display: none !important;
+}
+
+/* Ajustes para a tela de boas-vindas */
+#welcome-screen-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Game layout - otimizado para visualização única */
+.game-layout {
+  display: flex;
+  height: 100vh;
+  gap: 8px;
+  padding: 10px;
+  position: relative;
+  flex-direction: row; /* Garantir layout horizontal */
+  overflow: hidden; /* Prevenir scroll */
+  margin: 0;
+}
+
+/* Game center layout ajustado para remover game-info */
+.game-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alterado para melhor distribuição vertical */
+  min-width: 0;
+  height: 100vh;
+  padding: 0 8px;
+  overflow: hidden;
+  position: relative; /* Garantir que os elementos posicionem corretamente */
+}
+
+.team-sidebar {
+  width: 180px;
+  height: 100vh; /* Usar toda a altura disponível */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* Ajustar painéis de equipe e histórico nas sidebars */
+.team-panel.card {
+  flex: 1 1 auto; /* Permitir que o painel cresça e encolha */
+  margin-bottom: 8px;
+  min-height: 0; /* Permitir encolher abaixo do tamanho de conteúdo */
+  display: flex;
+  flex-direction: column;
+  height: auto; /* Altura baseada no conteúdo */
+}
+
+.sidebar-section.card {
+  flex: 0 1 auto; /* Não permitir que cresça além do necessário */
+  overflow-y: auto;
+  margin-bottom: 0;
+  min-height: 100px; /* Altura mínima para o histórico */
+  max-height: 30vh; /* Limitar a altura máxima */
+}
+
+/* Ajustar tabuleiro para ocupar espaço disponível */
+#game-board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr); /* Definir explicitamente 5 linhas */
+  gap: 4px;
+  aspect-ratio: 1; /* Proporção quadrada */
+  margin: auto;
+  padding: 4px;
+  width: 100%;
+  max-width: 900px; /* Limitar largura máxima */
+  align-self: center; /* Centralizar no container */
+  min-height: 0;
+  /* Removida a propriedade max-height fixa para permitir cálculos dinâmicos */
+  overflow: visible; /* Permitir que todo conteúdo seja visível */
+  align-content: space-between; /* Distribuir espaço entre as linhas */
+  margin-bottom: 10px; /* Adicionar espaço entre tabuleiro e controles */
+}
+
+/* Sidebar sections */
+.sidebar-section {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 8px; /* Reduzido para economizar espaço */
+  margin-bottom: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  flex: 1; /* Permite que cresça para ocupar espaço disponível */
+}
+
+/* Remover estilo específico do game-info que não é mais necessário */
+/* #game-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 4px;
+  background: #eee;
+  border-radius: 4px;
+  flex-shrink: 0;
+  min-height: 32px;
+  flex: 0 0 auto;
+} */
+
+/* Game controls mais compactos e alinhados com o tabuleiro */
+.game-controls-row {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  margin-top: 0; /* Reduzido para aproximar do tabuleiro */
+  padding: 4px 0;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 900px; /* Mesmo valor do game-board */
+  align-self: center; /* Centralizar como o game-board */
+}
+
+/* Spymaster controls alinhados com o tabuleiro */
+#spymaster-controls {
+  width: 100%;
+  max-width: 900px; /* Mesmo valor do game-board */
+  margin: 0 auto;
+}
+
+/* Current clue mais compacto */
+#current-clue {
+  margin-bottom: 6px; /* Aumentado levemente */
+  padding: 4px; /* Mantido compacto */
+  min-height: 32px;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 900px; /* Mesmo valor do game-board */
+  align-self: center; /* Centralizar como o game-board */
+}
+
+/* Player status bar */
+.player-status {
+  display: none;
+}

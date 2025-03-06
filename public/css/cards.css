@@ -1,0 +1,145 @@
+/* Card styles */
+
+/* Corrigir colisão de estilos com bootstrap - ajustar proporção para evitar corte */
+#game-board .card {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Reduzido de 100% para 90% para diminuir a altura */
+  border-radius: 15px !important;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+  min-height: 0;
+  border: 5px solid white !important;
+  display: block;
+  margin: 0;
+  background: none;
+}
+
+.card-inner {
+  position: absolute;
+  top: 0; /* Corrigido de -15 para 0 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 10px; /* Arredondado */
+  z-index: 1; /* Garantir que a imagem fique acima de outros elementos */
+}
+
+#game-board .card:hover {
+  transform: translateY(-5px) rotate(2deg); /* Adicionado rotate para efeito divertido */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  z-index: 10; /* Bring card to front on hover */
+}
+
+/* Card team indicators */
+.card .card-inner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  z-index: 1;
+  border-radius: 10px;
+}
+
+/* Revealed cards show color to everyone */
+.card.revealed.red .card-inner::after {
+  background-color: rgba(255, 82, 82, 0.7);
+  opacity: 0.7;
+  border: 2px solid #e74c3c;
+}
+
+.card.revealed.blue .card-inner::after {
+  background-color: rgba(33, 150, 243, 0.7);
+  opacity: 0.7;
+  border: 2px solid #3498db;
+}
+
+.card.revealed.neutral .card-inner::after {
+  background-color: rgba(255, 214, 0, 0.7);
+  opacity: 0.7;
+  border: 2px solid #f1c40f;
+}
+
+.card.revealed.assassin .card-inner::after {
+  background-color: rgba(44, 62, 80, 0.8);
+  opacity: 0.8;
+  border: 2px solid #2c3e50;
+}
+
+/* Cores das bordas para os cards - sempre visíveis */
+#game-board .card.red {
+  border-color: #FF5252 !important;
+}
+
+#game-board .card.blue {
+  border-color: #2196F3 !important;
+}
+
+#game-board .card.neutral {
+  border-color: #FFD600 !important;
+}
+
+#game-board .card.assassin {
+  border-color: #333333 !important;
+}
+
+/* Bordas mais destacadas para cards revelados */
+#game-board .card.revealed {
+  border-width: 6px !important;
+}
+
+/* Only spymasters can see non-revealed card colors */
+.spymaster-view .card:not(.revealed).red .card-inner::after {
+  background-color: rgba(255, 82, 82, 0.3);
+  opacity: 0.3;
+  border: 2px solid #e74c3c;
+}
+
+.spymaster-view .card:not(.revealed).blue .card-inner::after {
+  background-color: rgba(33, 150, 243, 0.3);
+  opacity: 0.3;
+  border: 2px solid #3498db;
+}
+
+.spymaster-view .card:not(.revealed).neutral .card-inner::after {
+  background-color: rgba(255, 214, 0, 0.3);
+  opacity: 0.3;
+  border: 2px solid #f1c40f;
+}
+
+.spymaster-view .card:not(.revealed).assassin .card-inner::after {
+  background-color: rgba(44, 62, 80, 0.4);
+  opacity: 0.4;
+  border: 2px solid #2c3e50;
+}
+
+/* Adicionar animação ao selecionar cards */
+#game-board .card:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+
+/* Fix for operatives to ensure colors are hidden for non-spymasters */
+body:not(.spymaster-view) .card:not(.revealed) .card-inner::after {
+  opacity: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Para operativos normais, bordas brancas (cartas ocultas) */
+body:not(.spymaster-view) #game-board .card:not(.revealed) {
+  border-color: white !important;
+}
+
+/* Para spymasters, bordas coloridas (conforme o time) */
+body.spymaster-view #game-board .card {
+  border-width: 5px !important;
+}

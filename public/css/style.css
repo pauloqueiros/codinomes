@@ -1,0 +1,369 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+#app {
+  max-width: none;
+  padding: 10px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  color: #2c3e50;
+}
+
+.screen {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  flex: 1;
+  overflow: auto;
+  max-height: calc(100vh - 80px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Welcome Screen */
+#welcome-screen .actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+}
+
+#welcome-screen .actions div {
+  text-align: center;
+  width: 45%;
+}
+
+input[type="text"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px 0;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* Fix button problems */
+.btn {
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: visible; /* Override any overflow that might be preventing click */
+  z-index: 2; /* Ensure buttons are clickable above other elements */
+}
+
+/* Fix for any Bootstrap overrides */
+button[type="button"] {
+  appearance: button;
+  -webkit-appearance: button;
+}
+
+/* Make the game layout work better with Bootstrap */
+.game-layout {
+  display: flex;
+  height: calc(100vh - 160px);
+  min-height: 500px;
+  gap: 15px;
+  position: relative; /* Ensure it doesn't block click events */
+  z-index: 1;
+}
+
+/* Improve card styles to work with Bootstrap */
+#game-board .card {
+  position: relative;
+  width: 100%;
+  padding-top: 75%;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  z-index: 1; /* Make sure cards are clickable */
+}
+
+/* Fix active states on buttons */
+.btn:active,
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(49, 132, 253, 0.5);
+}
+
+/* Ensure buttons don't get hidden */
+.game-controls-row {
+  position: relative;
+  z-index: 3;
+}
+
+/* Ensure form elements aren't interfering with buttons */
+.form-control {
+  z-index: 1;
+}
+
+/* Lobby Screen */
+.team-selection {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+.team {
+  width: 48%;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.team.red {
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid #e74c3c;
+}
+
+.team.blue {
+  background-color: rgba(52, 152, 219, 0.1);
+  border: 1px solid #3498db;
+}
+
+.members {
+  min-height: 100px;
+  margin: 10px 0;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+/* Game Screen */
+#game-info {
+  display: flex;
+  justify-content: center; /* Centraliza o indicador de turno */
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  background: #eee;
+  border-radius: 4px;
+}
+
+#turn-indicator {
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-size: 1.1em;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#turn-indicator.red {
+  background-color: #e74c3c;
+  color: white;
+}
+
+#turn-indicator.blue {
+  background-color: #3498db;
+  color: white;
+}
+
+#role-indicator {
+  font-weight: bold;
+}
+
+#game-board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  padding-top: 75%; /* 4:3 aspect ratio */
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+  min-height: 0; /* Override min-height to allow proper scaling */
+  border: none;
+}
+
+.card-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card.revealed.red .card-inner::after,
+.card.red .card-inner::after {
+  background-color: #e74c3c;
+  border: 2px solid #e74c3c;
+}
+
+.card.revealed.blue .card-inner::after,
+.card.blue .card-inner::after {
+  background-color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.card.revealed.neutral .card-inner::after,
+.card.neutral .card-inner::after {
+  background-color: #f1c40f;
+  border: 2px solid #f1c40f;
+}
+
+.card.revealed.assassin .card-inner::after,
+.card.assassin .card-inner::after {
+  background-color: #2c3e50;
+  border: 2px solid #2c3e50;
+}
+
+/* Only for spymaster, non-revealed cards */
+.card:not(.revealed).red .card-inner::after,
+.card:not(.revealed).blue .card-inner::after,
+.card:not(.revealed).neutral .card-inner::after,
+.card:not(.revealed).assassin .card-inner::after {
+  opacity: 0.15;
+}
+
+.card.revealed .card-inner::after {
+  opacity: 0.5;
+}
+
+#game-controls {
+  text-align: center;
+}
+
+/* Clue Section */
+#clue-section {
+  background: #eee;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+#current-clue {
+  text-align: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+#spymaster-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+#clue-input {
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+#clue-number-input {
+  width: 60px;
+  text-align: center;
+}
+
+/* End Screen */
+#end-screen {
+  text-align: center;
+  padding: 40px;
+}
+
+#winner-display {
+  font-size: 2em;
+  margin-bottom: 30px;
+}
+
+#play-again-btn, #return-lobby-btn {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+/* Player Status Bar */
+.player-status {
+  display: none;
+}
+
+/* Clue History */
+#clue-history {
+  margin-top: 20px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+#clue-history h3 {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.clue-history-item {
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clue-history-item.red {
+  background-color: rgba(231, 76, 60, 0.2);
+  border-left: 4px solid #e74c3c;
+  background-color: rgba(220, 53, 69, 0.1);
+}

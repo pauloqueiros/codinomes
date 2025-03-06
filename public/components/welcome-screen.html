@@ -1,0 +1,45 @@
+<div class="container py-4 d-flex align-items-center justify-content-center min-vh-100">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow welcome-card">
+      <div class="card-header bg-primary text-white text-center py-4">
+        <h2 class="mb-0 welcome-title">
+          <i class="fas fa-puzzle-piece me-2"></i>
+          Welcome to Codenames Pictures
+          <i class="fas fa-image ms-2"></i>
+        </h2>
+      </div>
+      <div class="card-body p-4">
+        <!-- Username section com contraste melhorado -->
+        <div class="username-section p-4 rounded mb-4">
+          <h3 class="h4 mb-3 text-center">
+            <i class="fas fa-user-astronaut me-2"></i>
+            Choose Your Codename
+          </h3>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text">
+              <i class="fas fa-user-secret"></i>
+            </span>
+            <input type="text" id="username-input" 
+                   class="form-control form-control-lg" 
+                   placeholder="Enter your secret name"
+                   maxlength="15"
+                   data-tooltip="Choose wisely, agent!">
+          </div>
+        </div>
+        
+        <!-- Game creation section -->
+        <div class="text-center mt-4">
+          <button id="create-room-btn" class="btn btn-success btn-lg px-5 py-3 welcome-btn">
+            <i class="fas fa-rocket"></i>Start New Mission!
+          </button>
+          <p class="text-muted mt-4">
+            <i class="fas fa-wand-sparkles me-2"></i>
+            A secret room code will be generated for you
+          </p>
+        </div>
+        
+        <input type="hidden" id="room-id-input">
+      </div>
+    </div>
+  </div>
+</div>

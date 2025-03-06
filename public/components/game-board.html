@@ -1,0 +1,32 @@
+<div class="game-center">
+  <div id="turn-indicator" class="badge text-uppercase fw-bold mb-2">
+    <i class="fas fa-gamepad me-2"></i>
+    <span class="turn-text">Waiting...</span>
+    <i class="fas fa-gamepad ms-2"></i>
+  </div>
+  
+  <div id="current-clue" class="alert alert-warning hidden">
+    <h3 class="h5 m-0">
+      <i class="fas fa-lightbulb me-2"></i>
+      Current Clue: <span id="clue-text" class="fw-bold"></span> (<span id="clue-number"></span>)
+    </h3>
+  </div>
+  
+  <div id="game-board" class="mb-2"></div>
+  
+  <div class="game-controls-row">
+    <div id="spymaster-controls" class="input-group hidden">
+      <input type="text" id="clue-input" class="form-control" placeholder="Enter a one-word clue">
+      <input type="number" id="clue-number-input" class="form-control" min="0" max="9" value="1" style="max-width: 60px; min-width: 50px;">
+      <button id="submit-clue-btn" class="btn btn-success" type="button">
+        <i class="fas fa-paper-plane me-1"></i> Give!
+      </button>
+    </div>
+    
+    <div id="game-controls" class="mt-2 text-center">
+      <button id="end-turn-btn" class="btn btn-warning hidden" type="button">
+        <i class="fas fa-hourglass-end me-1"></i> End Turn
+      </button>
+    </div>
+  </div>
+</div>

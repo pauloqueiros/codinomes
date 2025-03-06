@@ -1,0 +1,129 @@
+/* Estilos para modals do jogo */
+
+/* Modal de base */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  backdrop-filter: blur(5px);
+}
+
+/* Container de modal */
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  animation: modal-slide-in 0.3s ease;
+}
+
+/* Animação de entrada do modal */
+@keyframes modal-slide-in {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Animação de shake para indicar erro */
+@keyframes shake-animation {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(10px); }
+  50% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+.shake-animation {
+  animation: shake-animation 0.5s;
+}
+
+/* Estilos específicos para modal de username */
+.username-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  backdrop-filter: blur(5px);
+}
+
+.username-modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  animation: modal-slide-in 0.3s ease;
+}
+
+.username-modal h3 {
+  margin-bottom: 1rem;
+  text-align: center;
+  font-family: 'Comic Sans MS', 'Bubblegum Sans', cursive;
+  color: #2c3e50;
+}
+
+.username-modal p {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #5a6268;
+}
+
+.username-modal .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.username-modal .form-control {
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.username-modal .btn {
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 576px) {
+  .username-modal-content {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .username-modal h3 {
+    font-size: 1.25rem;
+  }
+  
+  .username-modal p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .username-modal .btn {
+    font-size: 1rem;
+    padding: 0.6rem 0.9rem;
+  }
+}
