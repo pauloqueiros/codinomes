@@ -13,6 +13,29 @@
       </div>
     </div>
     
+    <!-- Área de controles do spymaster -->
+    <div id="spymaster-controls" class="spymaster-controls hidden">
+      <div class="input-group">
+        <input type="text" id="clue-input" class="form-control form-control-lg" placeholder="Enter clue...">
+        <input type="number" id="clue-number-input" class="form-control form-control-lg" value="1" min="0" max="9">
+        <button id="submit-clue-btn" class="btn btn-primary">Give Clue</button>
+      </div>
+    </div>
+
+    <!-- Área de dica atual -->
+    <div id="current-clue" class="current-clue hidden">
+      <div class="clue-display">
+        <span class="clue-label">Current Clue:</span>
+        <span id="clue-text" class="clue-word">Word</span>
+        <span class="clue-dash">-</span>
+        <span id="clue-number" class="clue-number">0</span>
+      </div>
+      <!-- Botão de finalizar turno apenas para operativos -->
+      <div class="operative-control">
+        <button id="end-turn-btn" class="btn btn-warning hidden">End Turn</button>
+      </div>
+    </div>
+
     <!-- Game board component will be loaded here -->
     
     <!-- Right sidebar: Blue team -->

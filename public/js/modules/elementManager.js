@@ -1,9 +1,11 @@
-// Gerencia e recupera os elementos do DOM
+// Gerencia as referências aos elementos do DOM
 
 // Função para obter todos os elementos do DOM que o app precisa
 export function getElements() {
+  console.log("Getting element references...");
+  
   const elements = {
-    // Containers de tela
+    // Containers de tela - IMPORTANTE: Usar apenas os IDs corretos
     welcomeScreen: document.getElementById('welcome-screen-container'),
     gameScreen: document.getElementById('game-screen-container'),
     endScreen: document.getElementById('end-screen-container'),
@@ -51,18 +53,58 @@ export function getElements() {
     playerStatus: document.getElementById('player-status'),
   };
 
-  // Log para debugging de elementos críticos
-  console.log("Elementos críticos obtidos:");
-  console.log("- joinRedBtn:", elements.joinRedBtn);
-  console.log("- joinBlueBtn:", elements.joinBlueBtn);
-  console.log("- redSpymasterBtn:", elements.redSpymasterBtn);
-  console.log("- blueSpymasterBtn:", elements.blueSpymasterBtn);
-
+  // Debug extensivo para elementos críticos
+  console.log("--- CRITICAL ELEMENT CHECKS ---");
+  console.log("Welcome screen:", elements.welcomeScreen ? "FOUND" : "NOT FOUND");
+  console.log("Game screen:", elements.gameScreen ? "FOUND" : "NOT FOUND");
+  console.log("End screen:", elements.endScreen ? "FOUND" : "NOT FOUND");
+  
+  // Se não encontrou alguma tela, tentar encontrar de outras formas
+  if (!elements.welcomeScreen) {
+    elements.welcomeScreen = findScreenElement('welcome');
+  }
+  
+  if (!elements.gameScreen) {
+    elements.gameScreen = findScreenElement('game');
+  }
+  
+  if (!elements.endScreen) {
+    elements.endScreen = findScreenElement('end');
+  }
+  
   return elements;
 }
 
-// Adicionar função de reinicialização de elementos para garantir que temos os elementos
-// corretos após as telas serem carregadas dinamicamente
+// Função auxiliar para encontrar elementos de tela de várias maneiras
+function findScreenElement(screenName) {
+  const possibleIds = [
+    `${screenName}-screen-container`, 
+    `${screenName}-screen`,
+    `${screenName}ScreenContainer`,
+    `${screenName}Screen`
+  ];
+  
+  for (const id of possibleIds) {
+    const element = document.getElementById(id);
+    if (element) {
+      console.log(`Found ${screenName} screen with ID: ${id}`);
+      return element;
+    }
+  }
+  
+  // Último recurso: buscar por classe ou atributo
+  const byClass = document.querySelector(`.${screenName}-screen`);
+  if (byClass) {
+    console.log(`Found ${screenName} screen by class`);
+    return byClass;
+  }
+  
+  console.error(`Could not find ${screenName} screen element`);
+  return null;
+}
+
+// Função para atualizar referências aos elementos após componentes serem carregados
 export function refreshElements() {
+  console.log("Refreshing element references...");
   return getElements();
 }

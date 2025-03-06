@@ -1,6 +1,6 @@
 // Gerencia as comunicações via socket
 
-import { gameState, setDefaultUsername, loadGameSession, saveGameSession, clearGameSession } from './gameState.js';
+import { gameState, setDefaultUsername, loadGameSession, saveGameSession, clearGameSession, setUsername } from './gameState.js';
 import { 
   showScreen, 
   updateTeamPanels, 
@@ -91,7 +91,26 @@ export function setupSocketHandlers(socket, elements, screens) {
   socket.on('room-created', (data) => {
     gameState.currentRoom = data.roomId;
     try {
+      console.log("Room created event received. Showing game screen...");
+      
+      // Verificar se a tela do jogo existe
+      if (!screens.game) {
+        console.error("Game screen not found in screens object");
+        // Tentar buscar diretamente
+        screens.game = document.getElementById('game-screen-container');
+        if (!screens.game) {
+          console.error("Could not find game screen by ID");
+          return;
+        }
+      }
+      
+      // Verificar screens antes de chamar showScreen
+      console.log("Screens object:", Object.keys(screens));
+      
+      // Mostrar a tela do jogo
       showScreen(screens.game, screens);
+      console.log("Game screen should now be visible");
+      
       saveGameSession();
       
       // Substituir o elemento temporário por uma notificação
@@ -105,13 +124,38 @@ export function setupSocketHandlers(socket, elements, screens) {
   socket.on('room-joined', (data) => {
     gameState.currentRoom = data.roomId;
     try {
+      console.log("Room joined event received:", data);
+      
+      // Garantir que qualquer modal anterior seja removido
+      const existingModal = document.querySelector('.username-modal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
       // Verificar se o usuário já tem um nome configurado
-      if (!gameState.username) {
+      const fromDirectLink = new URLSearchParams(window.location.search).has('room');
+      const hasUsername = !!gameState.username;
+      
+      console.log('Room joined - fromDirectLink:', fromDirectLink, 'hasUsername:', hasUsername);
+      
+      if (!hasUsername || fromDirectLink) {
         // Solicitar username antes de mostrar a tela do jogo
         promptForUsername(socket, data.roomId, screens);
       } else {
+        // Verificar se screens.game existe
+        if (!screens.game) {
+          console.error("Game screen not found");
+          screens.game = document.getElementById('game-screen-container');
+          if (!screens.game) {
+            console.error("Could not find game screen in DOM");
+            return;
+          }
+        }
+        
         // Se já tem username, mostrar a tela do jogo normalmente
+        console.log("Showing game screen...");
         showScreen(screens.game, screens);
+        
         saveGameSession();
         
         // Notificar o usuário
@@ -162,12 +206,122 @@ export function setupSocketHandlers(socket, elements, screens) {
   // Jogo encerrado
   socket.on('game-ended', (data) => {
     try {
-      if (elements.winnerDisplay) {
-        elements.winnerDisplay.textContent = `${data.winner.toUpperCase()} team wins!`;
+      console.log('Game ended event received:', data);
+      
+      // SOLUÇÃO DE EMERGÊNCIA: Criar elemento da tela final dinamicamente se não existir
+      let endScreen = screens.end;
+      
+      if (!endScreen) {
+        console.warn('End screen not found in screens object, creating fallback');
+        endScreen = document.getElementById('end-screen-container');
+        
+        if (!endScreen) {
+          // Se ainda não encontrou, criar um elemento de forma emergencial
+          console.warn('Creating emergency end screen element');
+          endScreen = document.createElement('div');
+          endScreen.id = 'emergency-end-screen';
+          endScreen.className = 'container py-5';
+          document.body.appendChild(endScreen);
+          
+          // Adicionar HTML básico
+          endScreen.innerHTML = `
+            <div class="row justify-content-center">
+              <div class="col-md-8">
+                <div class="card shadow">
+                  <div class="card-body text-center">
+                    <h1 class="display-4 mb-4" id="emergency-winner-display">${data.winner.toUpperCase()} TEAM WINS!</h1>
+                    
+                    <div class="mt-4">
+                      <button id="emergency-play-again-btn" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-redo me-2"></i>Play Again
+                      </button>
+                      <button id="emergency-return-btn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>Return to Lobby
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Adicionar handlers de emergência
+          document.getElementById('emergency-play-again-btn')?.addEventListener('click', () => {
+            socket.emit('play-again', { room: gameState.currentRoom });
+          });
+          
+          document.getElementById('emergency-return-btn')?.addEventListener('click', () => {
+            socket.emit('return-lobby', { room: gameState.currentRoom });
+          });
+        }
       }
-      showScreen(screens.end, screens);
+      
+      // Ocultar outras telas
+      Object.values(screens).forEach(screen => {
+        if (screen) {
+          screen.classList.add('d-none');
+        }
+      });
+      
+      // Mostrar a tela de fim de jogo
+      if (endScreen) {
+        endScreen.classList.remove('d-none');
+        console.log('End screen displayed');
+      }
+      
+      // Notificar sobre o final do jogo
+      notify.success(`Game Over! ${data.winner.toUpperCase()} team wins!`, 'Game Ended');
     } catch (error) {
-      console.error('Error handling game-ended:', error);
+      console.error('Error handling game-ended:', error, error.stack);
+      
+      // FALLBACK EXTREMO: Mostrar alerta no caso de erro catastrófico
+      alert(`Game over! ${data.winner.toUpperCase()} team wins! Click OK to play again.`);
+      socket.emit('play-again', { room: gameState.currentRoom });
+    }
+  });
+
+  // Handler para reset do jogo (jogar novamente)
+  socket.on('game-reset', (data) => {
+    try {
+      console.log('Game reset received:', data);
+      
+      // Limpar cargo do jogador mas manter no time
+      gameState.playerRole = null;
+      gameState.isSpymaster = false;
+      
+      // Atualizar a sessão salva
+      saveGameSession();
+      
+      // Voltar para a tela de jogo (não a tela final)
+      showScreen(screens.game, screens);
+      
+      // Notificar o usuário
+      notify.success('Game has been reset. Choose your role to play again!', 'New Game');
+    } catch (error) {
+      console.error('Error handling game-reset:', error);
+    }
+  });
+  
+  // Handler para retornar ao lobby
+  socket.on('return-to-lobby', (data) => {
+    try {
+      console.log('Return to lobby received:', data);
+      
+      // Limpar time e cargo do jogador
+      gameState.playerTeam = null;
+      gameState.playerRole = null;
+      gameState.isSpymaster = false;
+      
+      // Atualizar a sessão salva
+      saveGameSession();
+      
+      // Voltar para a tela de jogo (que agora mostrará o lobby)
+      showScreen(screens.game, screens);
+      
+      // Notificar o usuário
+      notify.success('Returned to lobby. Choose a team to play!', 'Game Lobby');
+    } catch (error) {
+      console.error('Error handling return-to-lobby:', error);
     }
   });
 }
@@ -254,6 +408,12 @@ function showShareNotification(roomId) {
  * @param {object} screens - Referências para as telas do jogo
  */
 function promptForUsername(socket, roomId, screens) {
+  // Remover qualquer modal existente primeiro
+  const existingModal = document.querySelector('.username-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+
   // Criar o modal de forma dinâmica
   const modal = document.createElement('div');
   modal.className = 'username-modal';
@@ -347,6 +507,7 @@ function promptForUsername(socket, roomId, screens) {
       // Shake animation no input para indicar erro
       usernameInput.classList.add('shake-animation');
       setTimeout(() => usernameInput.classList.remove('shake-animation'), 500);
+      
       notify.warning('Please enter a username', 'Username Required');
     }
   }
@@ -361,7 +522,7 @@ function promptForUsername(socket, roomId, screens) {
       }
       to {
         transform: translateY(0);
-        opacity: 1;
+        opacity: 1);
       }
     }
     
@@ -375,6 +536,16 @@ function promptForUsername(socket, roomId, screens) {
     
     .shake-animation {
       animation: shake-animation 0.5s;
+    }
+    
+    @keyframes btn-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(0,123,255,0.7); }
+      100% { transform: scale(1); }
+    }
+    
+    .btn-pulse {
+      animation: btn-pulse 1s infinite;
     }
   `;
   document.head.appendChild(style);

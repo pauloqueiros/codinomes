@@ -17,10 +17,10 @@ header {
 }
 
 .screen {
-  background: #fff;
+  /* background: #fff; */
   border-radius: 8px;
   padding: 15px; /* Reduzido para economizar espaço */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   margin-top: 10px; /* Espaço pequeno no topo */
   margin-bottom: 10px;
   flex: 1;
@@ -167,6 +167,8 @@ header {
   width: 100%;
   max-width: 900px; /* Mesmo valor do game-board */
   margin: 0 auto;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
 }
 
 /* Current clue mais compacto */
@@ -200,4 +202,36 @@ header {
 
 #reset-game-btn.hidden {
   display: none;
+}
+
+/* Garantir que elementos escondidos realmente fiquem escondidos */
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Estilos específicos para os controles de operativo vs spymaster */
+#end-turn-btn {
+  padding: 8px 16px;
+  margin-top: 10px; 
+  display: block;
+  width: auto;
+  min-width: 150px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: all 0.3s ease;
+}
+
+/* Certifique-se de que temos triggers visuais claros */
+.operative-control {
+  background-color: rgba(240, 240, 240, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
 }

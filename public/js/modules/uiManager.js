@@ -1,21 +1,51 @@
 // Gerencia a interface do usuário
 
 import { gameState } from './gameState.js';
+import { notify } from './notificationManager.js';
 
 // Controla a visibilidade das telas
 export function showScreen(screenToShow, screens) {
   try {
-    // Oculta todas as telas
-    Object.values(screens).forEach(screen => {
+    console.log("Switching to screen:", screenToShow?.id || "unknown");
+    
+    if (!screenToShow) {
+      console.error("⚠️ Attempted to show null/undefined screen");
+      return;
+    }
+    
+    // Verificar se temos screens válidas
+    if (!screens || typeof screens !== 'object') {
+      console.error("⚠️ Invalid screens object provided");
+      return;
+    }
+    
+    // Log das telas disponíveis
+    console.log("Available screens:", Object.keys(screens).filter(key => screens[key]));
+    
+    // Ocultar todas as telas
+    Object.entries(screens).forEach(([key, screen]) => {
       if (screen) {
         screen.classList.add('d-none');
+        console.log(`Hidden screen: ${key} (${screen.id})`);
+      } else {
+        console.warn(`Screen '${key}' is undefined`);
       }
     });
     
-    // Mostra a tela solicitada
-    if (screenToShow) {
-      screenToShow.classList.remove('d-none');
-    }
+    // Mostrar a tela solicitada
+    screenToShow.classList.remove('d-none');
+    console.log(`⭐ Showing screen: ${screenToShow.id}`);
+    
+    // Verificação adicional: garantir que a tela esteja realmente visível
+    setTimeout(() => {
+      if (window.getComputedStyle(screenToShow).display === 'none') {
+        console.warn("Screen still not visible after removal of d-none class");
+        screenToShow.style.display = 'block';
+        console.log("Forced display:block on screen");
+      } else {
+        console.log("Screen is now visible");
+      }
+    }, 50);
   } catch (error) {
     console.error('Error switching screens:', error);
   }
@@ -140,12 +170,15 @@ export function updateGameBoard(room, elements) {
     }
   }
 
-  // Show/hide spymaster controls
+  // Show/hide spymaster controls - MODIFICADO: mostrar APENAS para spymasters
   if (elements.spymasterControls) {
+    // Verificação mais clara: player precisa ser spymaster E do time atual
     if (gameState.isSpymaster && gameState.playerTeam === room.currentTurn) {
       elements.spymasterControls.classList.remove('hidden');
+      console.log('Showing spymaster controls for spymaster');
     } else {
       elements.spymasterControls.classList.add('hidden');
+      console.log('Hiding spymaster controls - isSpymaster:', gameState.isSpymaster, 'playerTeam:', gameState.playerTeam);
     }
   }
 
@@ -160,8 +193,10 @@ export function updateGameBoard(room, elements) {
     
     if (isCurrentTeamOperative && hasActiveClue) {
       elements.endTurnBtn.classList.remove('hidden');
+      console.log('Showing end turn button for operative');
     } else {
       elements.endTurnBtn.classList.add('hidden');
+      console.log('Hiding end turn button - isCurrentTeamOperative:', isCurrentTeamOperative, 'hasActiveClue:', hasActiveClue);
     }
   }
 
@@ -254,6 +289,34 @@ export function updateGameBoard(room, elements) {
         checkMark.style.textShadow = '0 0 5px rgba(0,0,0,0.5)';
         checkMark.style.zIndex = '5';
         cardElement.appendChild(checkMark);
+      }
+      
+      // Add special class and effects for revealed assassin card
+      if (card.revealed && card.team === 'assassin') {
+        cardElement.classList.add('revealed-assassin');
+        
+        // Adiciona efeito visual de "game over"
+        const overlay = document.createElement('div');
+        overlay.className = 'assassin-overlay';
+        overlay.innerHTML = '<i class="fas fa-skull-crossbones fa-3x"></i>';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.right = '0';
+        overlay.style.bottom = '0';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.color = '#fff';
+        overlay.style.fontSize = '24px';
+        overlay.style.zIndex = '10';
+        
+        cardElement.appendChild(overlay);
+        
+        // Removido o trecho de som que pode causar erros
+        
+        // Não usar o notify aqui, pois pode interferir com a UI
+        console.log('Assassin card revealed!');
       }
       
       // Add click event if player is operative and it's their team's turn
@@ -423,10 +486,77 @@ export function updateClueHistory(clueHistory, elements) {
 
 // Atualiza a tela final
 export function updateEndScreen(room, elements, screens) {
-  if (elements.winnerDisplay) {
-    elements.winnerDisplay.textContent = `${room.winner.toUpperCase()} team wins!`;
+  if (!room || !room.winner) return;
+  
+  try {
+    console.log('Updating end screen with winner:', room.winner);
+    
+    // Verificar se temos acesso à tela final
+    if (!screens.end) {
+      console.error('End screen reference is missing!');
+      
+      // Tentar encontrar o elemento diretamente
+      screens.end = document.getElementById('end-screen');
+      if (!screens.end) {
+        console.error('Could not find end screen in DOM');
+        return;
+      }
+      
+      console.log('Found end screen directly from DOM');
+    }
+    
+    // Verificar se temos acesso ao elemento de exibição do vencedor
+    if (!elements.winnerDisplay) {
+      console.error('Winner display element is missing!');
+      
+      // Tentar encontrar o elemento pelo ID
+      const winnerDisplay = document.getElementById('winner-display');
+      if (winnerDisplay) {
+        elements.winnerDisplay = winnerDisplay;
+        console.log('Found winner display directly from DOM');
+      } else {
+        console.error('Could not find winner display in DOM');
+        return;
+      }
+    }
+    
+    const winnerTeam = room.winner.toUpperCase();
+    
+    // Verificar se o jogo acabou devido à carta assassina
+    const assassinRevealed = room.cards?.some(card => card.team === 'assassin' && card.revealed);
+    
+    if (assassinRevealed) {
+      const losingTeam = (room.winner === 'red' ? 'BLUE' : 'RED');
+      elements.winnerDisplay.innerHTML = `
+        <div class="assassin-game-over">
+          <h2>ASSASSIN CARD REVEALED!</h2>
+          <p>${winnerTeam} TEAM WINS!</p>
+          <p class="text-muted">${losingTeam} team revealed the assassin card.</p>
+        </div>
+      `;
+    } else {
+      elements.winnerDisplay.textContent = `${winnerTeam} team wins!`;
+    }
+    
+    // Adicionar animação no botão de jogar novamente
+    if (elements.playAgainBtn) {
+      elements.playAgainBtn.classList.add('btn-pulse');
+      
+      // Remover a animação de pulso após 10 segundos
+      setTimeout(() => {
+        elements.playAgainBtn.classList.remove('btn-pulse');
+      }, 10000);
+    }
+    
+    // Forçar exibição da tela de fim de jogo
+    showScreen(screens.end, screens);
+    
+    // Notificar sobre o final do jogo
+    notify.success(`${winnerTeam} team wins!`, 'Game Over');
+    
+  } catch (error) {
+    console.error('Error updating end screen:', error);
   }
-  showScreen(screens.end, screens);
 }
 
 // Atualiza o status do jogo

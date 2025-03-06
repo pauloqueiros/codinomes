@@ -1,18 +1,22 @@
-<div id="end-screen" class="screen container py-5 hidden">
+<div id="end-screen" class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-md-6 text-center">
-      <div class="card shadow winner-card">
-        <div class="card-body py-5">
-          <div class="confetti-container">
-            <i class="fas fa-trophy display-1 text-warning mb-3 winner-trophy"></i>
-          </div>
-          <h2 id="winner-display" class="display-6 mb-4 winner-text"></h2>
-          <div class="d-grid gap-3 col-md-8 mx-auto">
-            <button id="play-again-btn" class="btn btn-lg btn-success" type="button">
-              <i class="fas fa-redo-alt me-2"></i>Play Again!
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <h1 class="display-4 mb-4" id="winner-display">Team Wins!</h1>
+          
+          <div class="mt-4">
+            <button id="play-again-btn" class="btn btn-success btn-lg me-3" onclick="window.socket.emit('play-again', {room: window.gameState.currentRoom})">
+              <i class="fas fa-redo me-2"></i>Play Again
             </button>
-            <button id="return-home-btn" class="btn btn-lg btn-primary" type="button">
-              <i class="fas fa-home me-2"></i>Return Home
+            <button id="return-lobby-btn" class="btn btn-outline-secondary btn-lg" onclick="window.socket.emit('return-to-lobby', {room: window.gameState.currentRoom})">
+              <i class="fas fa-door-open me-2"></i>Return to Lobby
+            </button>
+          </div>
+          
+          <div class="mt-5">
+            <button id="return-home-btn" class="btn btn-sm btn-link text-muted">
+              <i class="fas fa-home me-1"></i>Back to Home
             </button>
           </div>
         </div>
@@ -20,6 +24,21 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Adicionar handlers diretos como solução de emergência
+  document.getElementById('play-again-btn')?.addEventListener('click', function() {
+    if (window.socket && window.gameState && window.gameState.currentRoom) {
+      window.socket.emit('play-again', { room: window.gameState.currentRoom });
+    }
+  });
+  
+  document.getElementById('return-lobby-btn')?.addEventListener('click', function() {
+    if (window.socket && window.gameState && window.gameState.currentRoom) {
+      window.socket.emit('return-to-lobby', { room: window.gameState.currentRoom });
+    }
+  });
+</script>
 
 <style>
   /* Estilos para a tela de vitória */
@@ -57,5 +76,30 @@
     0% {transform: scale(1);}
     50% {transform: scale(1.05);}
     100% {transform: scale(1);}
+  }
+
+  .btn-pulse {
+    animation: btn-pulse 1s infinite;
+  }
+  
+  @keyframes btn-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(0,123,255,0.7); }
+    100% { transform: scale(1); }
+  }
+  
+  .assassin-game-over h2 {
+    color: #ff0000;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+  }
+  
+  .assassin-game-over {
+    animation: fadeIn 1s;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 </style>

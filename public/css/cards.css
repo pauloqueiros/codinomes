@@ -74,6 +74,34 @@
   border: 2px solid #2c3e50;
 }
 
+/* Estilo especial para a carta assassina quando revelada */
+.card.revealed.assassin .card-inner::after {
+  background-color: rgba(0, 0, 0, 0.8);
+  opacity: 0.9;
+  box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.7);
+}
+
+.card.revealed.assassin {
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+/* Estilo para a mensagem de vitória por assassino */
+.assassin-game-over {
+  animation: fadeIn 1s;
+}
+
+.assassin-game-over h2 {
+  color: #ff0000;
+  text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Cores das bordas para os cards - sempre visíveis */
 #game-board .card.red {
   border-color: #FF5252 !important;

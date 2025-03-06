@@ -1,0 +1,36 @@
+/* Correções para problemas de display */
+
+/* Garantir que as telas com classe 'screen' sigam o comportamento correto */
+.screen {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.screen.d-none {
+  display: none !important;
+}
+
+/* Garantir que os containers de componentes tenham altura adequada */
+#welcome-screen-container,
+#game-screen-container,
+#end-screen-container {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Impedir que elementos sem display block causem problemas */
+#game-board {
+  display: block;
+  min-height: 500px;
+}
+
+/* Evitar problemas de sobreposição de modais */
+.modal-backdrop + .modal-backdrop {
+  z-index: 1051;
+}
+
+/* Garantir que o z-index dos elementos importantes seja suficientemente alto */
+.username-modal {
+  z-index: 2000;
+}

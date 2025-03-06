@@ -110,14 +110,26 @@ export function setDefaultUsername(socket) {
   const storedName = localStorage.getItem('codenames-username');
   
   if (storedName) {
-    gameState.username = storedName;
-    socket.emit('set-username', storedName);
+    // Se estamos entrando via link direto, apenas armazenar localmente mas não enviar
+    // para o servidor ainda - vamos pedir confirmação pelo modal
+    const fromDirectLink = new URLSearchParams(window.location.search).has('room');
+    
+    if (!fromDirectLink) {
+      gameState.username = storedName;
+      socket.emit('set-username', storedName);
+    }
     return storedName;
   } else if (gameState.playerId) {
     const defaultName = `Player-${gameState.playerId.substr(0, 5)}`;
-    gameState.username = defaultName;
-    socket.emit('set-username', defaultName);
-    localStorage.setItem('codenames-username', defaultName);
+    
+    // Apenas definir um nome padrão se não estamos entrando via link
+    const fromDirectLink = new URLSearchParams(window.location.search).has('room');
+    if (!fromDirectLink) {
+      gameState.username = defaultName;
+      socket.emit('set-username', defaultName);
+      localStorage.setItem('codenames-username', defaultName);
+    }
+    
     return defaultName;
   }
   

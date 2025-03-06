@@ -230,16 +230,84 @@ function resetGame(roomId, socket) {
   // Reset game state
   room.gameState = 'waiting';
   room.cards = generateCards();
-  room.currentTurn = 'red';
+  
+  // Determine first team (should be the team with 9 cards)
+  const redCards = room.cards.filter(card => card.team === 'red').length;
+  room.currentTurn = redCards === 9 ? 'red' : 'blue';
+  
   room.winner = null;
   room.currentClue = null;
   room.clueHistory = []; // Clear clue history
   
-  // Keep teams but reset game-specific data
+  // Reset spymaster roles but keep teams
+  room.redSpy = null;
+  room.blueSpy = null;
   
-  // Broadcast updated game state
-  socket.to(roomId).emit('game-state', { room });
-  socket.emit('game-state', { room });
+  // Reset player roles but keep them in teams
+  for (const player of room.redTeam) {
+    player.role = null;
+  }
+  
+  for (const player of room.blueTeam) {
+    player.role = null;
+  }
+  
+  // Update all players in the room
+  room.players.forEach(player => {
+    // Find if player is in red or blue team and reset role
+    if (room.redTeam.some(p => p.id === player.id)) {
+      player.role = null;
+      player.team = 'red';
+    } else if (room.blueTeam.some(p => p.id === player.id)) {
+      player.role = null;
+      player.team = 'blue';
+    } else {
+      player.role = null;
+      player.team = null;
+    }
+  });
+  
+  // Broadcast updated game state to all players
+  io.to(roomId).emit('game-reset', { room });
+  io.to(roomId).emit('game-state', { room });
+}
+
+// Nova função para lidar com retorno ao lobby (similar a resetGame mas limpa os times)
+function returnToLobby(roomId, socket) {
+  const room = rooms.get(roomId);
+  
+  if (!room) {
+    socket.emit('error', { message: 'Room does not exist' });
+    return;
+  }
+  
+  // Reset game state
+  room.gameState = 'waiting';
+  room.cards = generateCards();
+  
+  // Determine first team (should be the team with 9 cards)
+  const redCards = room.cards.filter(card => card.team === 'red').length;
+  room.currentTurn = redCards === 9 ? 'red' : 'blue';
+  
+  room.winner = null;
+  room.currentClue = null;
+  room.clueHistory = []; // Clear clue history
+  
+  // Reset teams completely
+  room.redTeam = [];
+  room.blueTeam = [];
+  room.redSpy = null;
+  room.blueSpy = null;
+  
+  // Reset all player team and role assignments
+  for (const player of room.players) {
+    player.team = null;
+    player.role = null;
+  }
+  
+  // Broadcast updated game state to all players
+  io.to(roomId).emit('return-to-lobby', { room });
+  io.to(roomId).emit('game-state', { room });
 }
 
 function handleCardSelection(socket, cardIndex) {
@@ -248,25 +316,45 @@ function handleCardSelection(socket, cardIndex) {
     const player = room.players.find(p => p.id === socket.id);
     
     if (player) {
+      console.log(`Player ${player.username} selected card ${cardIndex} in room ${roomId}`);
+      
       // Check if valid move
-      if (room.gameState !== 'playing') return;
-      if (player.team !== room.currentTurn) return;
-      if (room.cards[cardIndex].revealed) return;
+      if (room.gameState !== 'playing') {
+        console.log('Invalid move: Game is not in playing state');
+        return;
+      }
+      
+      if (player.team !== room.currentTurn) {
+        console.log('Invalid move: Not this player\'s team turn');
+        return;
+      }
+      
+      if (!room.cards[cardIndex] || room.cards[cardIndex].revealed) {
+        console.log('Invalid move: Card already revealed or does not exist');
+        return;
+      }
       
       // Reveal card
       room.cards[cardIndex].revealed = true;
+      const cardTeam = room.cards[cardIndex].team;
+      console.log(`Card ${cardIndex} revealed. Team: ${cardTeam}`);
       
-      // Check game ending conditions
-      checkGameEnd(room);
+      // Check game ending conditions with improved logging
+      const gameEnded = checkGameEnd(room);
+      console.log(`Game ended check: ${gameEnded}`);
       
-      // Switch turns if card doesn't belong to current team
-      if (room.cards[cardIndex].team !== room.currentTurn) {
-        room.currentTurn = room.currentTurn === 'red' ? 'blue' : 'red';
+      // Se o jogo não acabou, continuar normalmente
+      if (!gameEnded) {
+        // Switch turns if card doesn't belong to current team
+        if (cardTeam !== room.currentTurn) {
+          room.currentTurn = room.currentTurn === 'red' ? 'blue' : 'red';
+          console.log(`Turn switched to: ${room.currentTurn}`);
+        }
+        
+        // Broadcast updated state
+        io.to(roomId).emit('game-state', { room });
       }
       
-      // Broadcast updated state
-      socket.to(roomId).emit('game-state', { room });
-      socket.emit('game-state', { room });
       break;
     }
   }
@@ -397,20 +485,90 @@ function generateCards() {
 }
 
 function checkGameEnd(room) {
-  const redCardsLeft = room.cards.filter(card => card.team === 'red' && !card.revealed).length;
-  const blueCardsLeft = room.cards.filter(card => card.team === 'blue' && !card.revealed).length;
+  // Check if assassin card was revealed
   const assassinRevealed = room.cards.find(card => card.team === 'assassin' && card.revealed);
-  
-  if (redCardsLeft === 0) {
-    room.gameState = 'ended';
-    room.winner = 'red';
-  } else if (blueCardsLeft === 0) {
-    room.gameState = 'ended';
-    room.winner = 'blue';
-  } else if (assassinRevealed) {
-    room.gameState = 'ended';
+  if (assassinRevealed) {
+    // Set winner to opposite team of current turn
     room.winner = room.currentTurn === 'red' ? 'blue' : 'red';
+    room.gameState = 'ended';
+    
+    console.log(`Game ended due to assassin card. Winner: ${room.winner}`);
+    
+    // Emitir mais informações de diagnóstico
+    const roomData = {
+      id: room.id,
+      winner: room.winner,
+      gameState: room.gameState,
+      redTeamSize: room.redTeam.length,
+      blueTeamSize: room.blueTeam.length
+    };
+    console.log('Room state at game end:', roomData);
+    
+    // Emitir estado do jogo para todos, com log claro
+    console.log('Emitting game-state event for room', room.id);
+    io.to(room.id).emit('game-state', { room });
+    
+    // Depois de um pequeno atraso, emitir o evento game-ended
+    console.log('Scheduling game-ended event for room', room.id);
+    setTimeout(() => {
+      console.log('Emitting game-ended event for room', room.id);
+      io.to(room.id).emit('game-ended', { 
+        winner: room.winner,
+        byAssassin: true,
+        roomId: room.id // Adicionado o ID da sala para debug
+      });
+    }, 500);
+    
+    return true;
   }
+  
+  // Check if any team revealed all their cards
+  const redCardsTotal = room.cards.filter(card => card.team === 'red').length;
+  const blueCardsTotal = room.cards.filter(card => card.team === 'blue').length;
+  const redCardsRevealed = room.cards.filter(card => card.team === 'red' && card.revealed).length;
+  const blueCardsRevealed = room.cards.filter(card => card.team === 'blue' && card.revealed).length;
+  
+  // Update cards left in the room object for the UI
+  room.cardsLeft = {
+    red: redCardsTotal - redCardsRevealed,
+    blue: blueCardsTotal - blueCardsRevealed
+  };
+  
+  if (redCardsRevealed === redCardsTotal) {
+    room.winner = 'red';
+    room.gameState = 'ended';
+    
+    console.log(`Game ended due to all red cards revealed. Winner: ${room.winner}`);
+    
+    // Emitir explicitamente o estado do jogo para todos
+    io.to(room.id).emit('game-state', { room });
+    
+    // Atrasar o envio do evento game-ended para garantir que o estado do jogo seja processado primeiro
+    setTimeout(() => {
+      io.to(room.id).emit('game-ended', { winner: 'red' });
+    }, 500);
+    
+    return true;
+  }
+  
+  if (blueCardsRevealed === blueCardsTotal) {
+    room.winner = 'blue';
+    room.gameState = 'ended';
+    
+    console.log(`Game ended due to all blue cards revealed. Winner: ${room.winner}`);
+    
+    // Emitir explicitamente o estado do jogo para todos
+    io.to(room.id).emit('game-state', { room });
+    
+    // Atrasar o envio do evento game-ended para garantir que o estado do jogo seja processado primeiro
+    setTimeout(() => {
+      io.to(room.id).emit('game-ended', { winner: 'blue' });
+    }, 500);
+    
+    return true;
+  }
+  
+  return false;
 }
 
 function setUsername(socket, username) {
@@ -578,6 +736,7 @@ module.exports = {
   startGame,
   endTurn,
   resetGame,
+  returnToLobby,  // Exportar nova função
   giveClue,
   handleCardSelection,
   handleDisconnect,

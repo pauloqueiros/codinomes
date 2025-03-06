@@ -43,7 +43,9 @@ io.on('connection', (socket) => {
   
   // Handle username setting
   socket.on('set-username', (username) => {
-    const sanitizedUsername = username.trim().substring(0, 15); // Limit length and trim
+    const sanitizedUsername = typeof username === 'string' ? 
+        username.trim().substring(0, 15) : // Limit length and trim if it's a string
+        `Player_${socket.id.substr(0, 5)}`; // Fallback if username is not a string
     const setName = gameManager.setUsername(socket, sanitizedUsername);
     socket.emit('username-set', { username: setName });
   });
@@ -86,6 +88,11 @@ io.on('connection', (socket) => {
   // Handle play again
   socket.on('play-again', (data) => {
     gameManager.resetGame(data.room, socket);
+  });
+  
+  // Handle return to lobby
+  socket.on('return-to-lobby', (data) => {
+    gameManager.returnToLobby(data.room, socket);
   });
   
   // Handle card selection

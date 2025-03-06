@@ -30,10 +30,21 @@ async function initializeGame() {
       end: elements.endScreen,
     };
     
+    // Verificação adicional para garantir que as telas existem
+    if (!screens.welcome) console.error('Welcome screen not found!');
+    if (!screens.game) console.error('Game screen not found!');
+    if (!screens.end) console.error('End screen not found!');
+    
     // Verifica se as telas essenciais existem
     if (!screens.welcome || !screens.game || !screens.end) {
       console.error('Missing one or more required screen elements');
       notify.error("Critical game screens are missing", "Initialization Error");
+      
+      // Registre os IDs para debug
+      console.log('Screen container IDs expected:');
+      console.log('- welcome-screen-container');
+      console.log('- game-screen-container');
+      console.log('- end-screen-container');
       return;
     }
     
@@ -56,6 +67,12 @@ async function initializeGame() {
       // Armazenar o ID da sala no input oculto
       if (elements.roomIdInput) {
         elements.roomIdInput.value = urlParams.room;
+      }
+      
+      // Limpar qualquer nome de usuário anterior para forçar o modal de username
+      // quando o usuário entrar diretamente pelo link
+      if (!gameState.username) {
+        localStorage.removeItem('codenames-session');
       }
       
       // Aguardar um momento para garantir que os event listeners estão prontos

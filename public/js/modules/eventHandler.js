@@ -306,6 +306,54 @@ export function setupEventListeners(elements, screens) {
     }
   });
 
+  // Botão para jogar novamente - na tela de fim de jogo
+  if (elements.playAgainBtn) {
+    elements.playAgainBtn.addEventListener('click', () => {
+      if (window.socket && gameState.currentRoom) {
+        console.log('Requesting game reset for room:', gameState.currentRoom);
+        window.socket.emit('play-again', { room: gameState.currentRoom });
+      }
+    });
+  }
+
+  // Botão para retornar ao lobby - na tela de fim de jogo
+  if (elements.returnLobbyBtn) {
+    elements.returnLobbyBtn.addEventListener('click', () => {
+      if (gameState.currentRoom) {
+        console.log('Returning to lobby for room:', gameState.currentRoom);
+        
+        // Limpar definições de time/cargo, mas permanecer na sala
+        gameState.playerTeam = null;
+        gameState.playerRole = null;
+        gameState.isSpymaster = false;
+        
+        // Solicitar ao servidor para retornar ao lobby
+        if (window.socket) {
+          window.socket.emit('return-to-lobby', { room: gameState.currentRoom });
+        }
+      }
+    });
+  }
+
+  // Botão para voltar à tela inicial - na tela de fim de jogo
+  if (elements.returnHomeBtn) {
+    elements.returnHomeBtn.addEventListener('click', () => {
+      // Limpar sessão do jogo atual e voltar para a tela inicial
+      clearGameSession();
+      
+      // Sair da sala atual
+      if (window.socket && gameState.currentRoom) {
+        window.socket.emit('leave-room');
+      }
+      
+      // Voltar para a tela inicial
+      showScreen(screens.welcome, screens);
+      
+      // Limpar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
+
   // Expor a função joinRoom para poder ser chamada de outros módulos
   window.joinRoom = joinRoom;
 }
