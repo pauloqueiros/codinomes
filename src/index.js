@@ -98,6 +98,11 @@ io.on('connection', (socket) => {
     gameManager.leaveRoom(socket);
   });
   
+  // Handle reset game
+  socket.on('reset-game', (data) => {
+    gameManager.resetGame(data.room, socket);
+  });
+  
   // Handle disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);

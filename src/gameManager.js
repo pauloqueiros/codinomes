@@ -3,8 +3,27 @@ const rooms = new Map();
 // Adicionar io como parâmetro do módulo
 let io;
 
+// Inicialização do gestor do jogo
 function initialize(socketIo) {
   io = socketIo;
+  
+  console.log("Game Manager initialized");
+  
+  // Limpeza periódica de salas vazias a cada hora
+  setInterval(() => {
+    let roomsRemoved = 0;
+    
+    for (const [roomId, room] of rooms.entries()) {
+      if (room.players.length === 0) {
+        rooms.delete(roomId);
+        roomsRemoved++;
+      }
+    }
+    
+    if (roomsRemoved > 0) {
+      console.log(`Cleaned up ${roomsRemoved} empty rooms. Total rooms: ${rooms.size}`);
+    }
+  }, 60 * 60 * 1000); // 1 hora
 }
 
 function createRoom(roomId, socket) {
@@ -79,15 +98,15 @@ function joinTeam(roomId, socket, team, role) {
     return;
   }
 
-  // Se o jogo já começou, não permitir trocas
-  if (room.gameState === 'playing') {
-    socket.emit('error', { message: 'Cannot change teams after game has started' });
-    return;
-  }
-
   // Verificar se o jogador já é um spymaster (em qualquer equipe)
   if (player.role === 'spymaster') {
     socket.emit('error', { message: 'Spymasters cannot change teams' });
+    return;
+  }
+
+  // Se o jogo já começou, apenas permitir entrar como operativo (não como spymaster)
+  if (room.gameState === 'playing' && role === 'spymaster') {
+    socket.emit('error', { message: 'Cannot join as spymaster after game has started' });
     return;
   }
 
@@ -127,8 +146,8 @@ function joinTeam(roomId, socket, team, role) {
     }
   }
 
-  // Se ambos os times têm spymaster, iniciar o jogo automaticamente
-  if (room.redSpy && room.blueSpy) {
+  // Se ambos os times têm spymaster e o jogo ainda não começou, iniciar o jogo automaticamente
+  if (room.gameState !== 'playing' && room.redSpy && room.blueSpy) {
     startGame(roomId, socket);
   } else {
     // Broadcast do estado atualizado

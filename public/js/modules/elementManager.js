@@ -30,6 +30,7 @@ export function getElements() {
     gameBoard: document.getElementById('game-board'),
     turnIndicator: document.getElementById('turn-indicator'),
     endTurnBtn: document.getElementById('end-turn-btn'),
+    resetGameBtn: document.getElementById('reset-game-btn'), // Novo botão de reset
     currentClue: document.getElementById('current-clue'),
     clueText: document.getElementById('clue-text'),
     clueNumber: document.getElementById('clue-number'),

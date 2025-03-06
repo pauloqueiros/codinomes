@@ -63,33 +63,49 @@ export function updateGameControls(room, elements) {
     startButton.style.display = room.gameState === 'playing' ? 'none' : 'block';
   }
   
-  // Desabilitar botões de troca de equipe quando:
-  // 1. O jogo já começou
-  // 2. O jogador já é um spymaster (independente do estado do jogo)
-  if (room.gameState === 'playing' || gameState.isSpymaster) {
+  // Adicionar botão de reset - Visível apenas durante o jogo e apenas para spymasters
+  if (elements.resetGameBtn) {
+    if (room.gameState === 'playing' && gameState.isSpymaster) {
+      elements.resetGameBtn.classList.remove('hidden');
+    } else {
+      elements.resetGameBtn.classList.add('hidden');
+    }
+  }
+  
+  // Desabilitar botões de troca de equipe quando o jogador já é um spymaster
+  if (gameState.isSpymaster) {
     // Desabilitar todos os botões de troca de equipe
     if (elements.joinRedBtn) {
       elements.joinRedBtn.disabled = true;
-      elements.joinRedBtn.title = gameState.isSpymaster ? 
-        'Spymasters cannot change teams' : 'Game already started';
+      elements.joinRedBtn.title = 'Spymasters cannot change teams';
     }
     
     if (elements.joinBlueBtn) {
       elements.joinBlueBtn.disabled = true;
-      elements.joinBlueBtn.title = gameState.isSpymaster ? 
-        'Spymasters cannot change teams' : 'Game already started';
+      elements.joinBlueBtn.title = 'Spymasters cannot change teams';
     }
     
     if (elements.redSpymasterBtn) {
       elements.redSpymasterBtn.disabled = true;
-      elements.redSpymasterBtn.title = gameState.isSpymaster ? 
-        'You are already a spymaster' : 'Game already started';
+      elements.redSpymasterBtn.title = 'You are already a spymaster';
     }
     
     if (elements.blueSpymasterBtn) {
       elements.blueSpymasterBtn.disabled = true;
-      elements.blueSpymasterBtn.title = gameState.isSpymaster ? 
-        'You are already a spymaster' : 'Game already started';
+      elements.blueSpymasterBtn.title = 'You are already a spymaster';
+    }
+  }
+  
+  // Desabilitar apenas os botões de spymaster quando o jogo já começou
+  else if (room.gameState === 'playing') {
+    if (elements.redSpymasterBtn) {
+      elements.redSpymasterBtn.disabled = true;
+      elements.redSpymasterBtn.title = 'Game already started';
+    }
+    
+    if (elements.blueSpymasterBtn) {
+      elements.blueSpymasterBtn.disabled = true;
+      elements.blueSpymasterBtn.title = 'Game already started';
     }
   }
 }

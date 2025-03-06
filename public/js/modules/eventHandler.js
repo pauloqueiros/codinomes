@@ -297,6 +297,15 @@ export function setupEventListeners(elements, screens) {
     }
   });
   
+  // Botão para resetar o jogo
+  addSafeEventListener(elements.resetGameBtn, 'click', (e) => {
+    e.preventDefault();
+    if (confirm('Are you sure you want to reset the game? This will start a new game with the same players.')) {
+      socket.emit('reset-game', { room: gameState.currentRoom });
+      notify.info('Game has been reset', 'Game Reset');
+    }
+  });
+
   // Expor a função joinRoom para poder ser chamada de outros módulos
   window.joinRoom = joinRoom;
 }

@@ -184,3 +184,20 @@ header {
 .player-status {
   display: none;
 }
+
+/* Botão de reset */
+#reset-game-btn {
+  background-color: #dc3545;
+  color: white;
+  margin-left: 8px;
+  transition: all 0.3s ease;
+}
+
+#reset-game-btn:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+#reset-game-btn.hidden {
+  display: none;
+}
