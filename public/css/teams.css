@@ -176,6 +176,7 @@
   padding: 0;
 }
 
+/* Melhorias para itens do histórico de dicas */
 .clue-history-item {
   padding: 8px;
   margin-bottom: 5px;
@@ -183,6 +184,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.2s ease;
 }
 
 .clue-history-item.red {
@@ -193,6 +195,53 @@
 .clue-history-item.blue {
   background-color: rgba(52, 152, 219, 0.2);
   border-left: 4px solid #3498db;
+}
+
+/* Destacar a dica mais recente no histórico */
+.clue-history-item.latest-clue {
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  transform: translateY(-2px);
+}
+
+/* Estilos específicos para melhorar a legibilidade da dica atual */
+#current-clue {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+#current-clue.red {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid #e74c3c;
+}
+
+#current-clue.blue {
+  background-color: rgba(52, 152, 219, 0.1);
+  border: 1px solid #3498db;
+}
+
+#current-clue.hidden {
+  display: none !important;
+}
+
+.clue-display {
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.clue-word {
+  font-weight: bold;
+  margin: 0 5px;
+}
+
+.clue-number {
+  font-weight: bold;
 }
 
 .clue-content {

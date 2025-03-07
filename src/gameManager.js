@@ -209,11 +209,14 @@ function endTurn(roomId, socket) {
     return;
   }
   
-  // Reset current clue when turn ends
-  room.currentClue = null;
+  // Não resetamos a dica aqui - ela permanece no objeto room.currentClue
+  // Isso permite que continue no histórico, mas o frontend decidirá se deve mostrar ou não
+  // baseado no turno atual
   
   // Switch turns
   room.currentTurn = room.currentTurn === 'red' ? 'blue' : 'red';
+  
+  console.log(`Turn switched to ${room.currentTurn}. Current clue remains in history.`);
   
   // Broadcast updated game state
   io.to(roomId).emit('game-state', { room });

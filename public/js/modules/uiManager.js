@@ -211,13 +211,22 @@ export function updateGameBoard(room, elements) {
     }
   }
 
-  // Show current clue if available
+  // Show current clue if available - MODIFICADO: mostrar apenas quando for do time atual
   if (elements.currentClue && elements.clueText && elements.clueNumber && room.currentClue) {
-    elements.currentClue.classList.remove('hidden');
-    elements.clueText.textContent = room.currentClue.word || '';
-    elements.clueNumber.textContent = room.currentClue.number || '';
+    // Modificado: verificar se a dica atual pertence ao time atual
+    if (room.currentClue.team === room.currentTurn) {
+      elements.currentClue.classList.remove('hidden');
+      elements.clueText.textContent = room.currentClue.word || '';
+      elements.clueNumber.textContent = room.currentClue.number || '';
+      console.log(`Showing clue for ${room.currentTurn} team: "${room.currentClue.word}" - ${room.currentClue.number}`);
+    } else {
+      // Ocultar a dica se não for do time atual (turno atual)
+      elements.currentClue.classList.add('hidden');
+      console.log(`Hiding clue from previous team (${room.currentClue.team}) during ${room.currentTurn}'s turn`);
+    }
   } else if (elements.currentClue) {
     elements.currentClue.classList.add('hidden');
+    console.log('No current clue available');
   }
 
   // Update team sidebars
@@ -465,9 +474,15 @@ export function updateClueHistory(clueHistory, elements) {
     return;
   }
 
-  [...clueHistory].reverse().forEach(clue => {
+  // Mostrar as dicas em ordem reversa (mais recentes primeiro) e destacar a última
+  [...clueHistory].reverse().forEach((clue, index) => {
     const clueItem = document.createElement('div');
     clueItem.className = `clue-history-item ${clue.team}`;
+    
+    // Destacar a dica mais recente
+    if (index === 0) {
+      clueItem.classList.add('latest-clue');
+    }
     
     const clueContent = document.createElement('div');
     clueContent.className = 'clue-content';
