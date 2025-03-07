@@ -1,3 +1,23 @@
+const { 
+  BOARD, 
+  CARD_DISTRIBUTION, 
+  CARD_TYPES, 
+  GAME_STATES, 
+  PLAYER_ROLES, 
+  TEAMS,
+  TIMES 
+} = require('./constants');
+
+const {
+  shuffleArray,
+  generateUniqueImageIds,
+  sanitizeUsername,
+  findPlayerInRoom,
+  isPlayerInTeam,
+  isSpymaster,
+  countRemainingCards
+} = require('./utils');
+
 const rooms = new Map();
 
 // Adicionar io como parâmetro do módulo
@@ -23,7 +43,7 @@ function initialize(socketIo) {
     if (roomsRemoved > 0) {
       console.log(`Cleaned up ${roomsRemoved} empty rooms. Total rooms: ${rooms.size}`);
     }
-  }, 60 * 60 * 1000); // 1 hora
+  }, TIMES.CLEANUP_INTERVAL);
 }
 
 function createRoom(roomId, socket) {
@@ -33,17 +53,17 @@ function createRoom(roomId, socket) {
   }
   
   // Get username from socket data or use default
-  const username = socket.data.username || `Player-${socket.id.substr(0, 5)}`;
+  const username = socket.data.username || sanitizeUsername(null, 'Player', socket.id.substr(0, 5));
   
   // Determine first team (should be the team with 9 cards)
   const cardsDistribution = generateCards();
-  const redCards = cardsDistribution.filter(card => card.team === 'red').length;
-  const initialTurn = redCards === 9 ? 'red' : 'blue';
+  const redCards = cardsDistribution.filter(card => card.team === TEAMS.RED).length;
+  const initialTurn = redCards === CARD_DISTRIBUTION.RED ? TEAMS.RED : TEAMS.BLUE;
   
   const newRoom = {
     id: roomId,
     players: [{ id: socket.id, username, team: null, role: null }],
-    gameState: 'waiting', // waiting, playing, ended
+    gameState: GAME_STATES.WAITING,
     cards: cardsDistribution,
     currentTurn: initialTurn, // The team with 9 cards goes first
     redTeam: [],
@@ -72,7 +92,7 @@ function joinRoom(roomId, socket) {
   }
   
   // Get username from socket data or use default
-  const username = socket.data.username || `Player-${socket.id.substr(0, 5)}`;
+  const username = socket.data.username || sanitizeUsername(null, 'Player', socket.id.substr(0, 5));
   
   room.players.push({ id: socket.id, username, team: null, role: null });
   socket.join(roomId);
@@ -92,40 +112,40 @@ function joinTeam(roomId, socket, team, role) {
   }
   
   // Encontrar jogador
-  const player = room.players.find(p => p.id === socket.id);
+  const player = findPlayerInRoom(room, socket.id);
   if (!player) {
     socket.emit('error', { message: 'Player not found in room' });
     return;
   }
 
   // Verificar se o jogador já é um spymaster (em qualquer equipe)
-  if (player.role === 'spymaster') {
+  if (player.role === PLAYER_ROLES.SPYMASTER) {
     socket.emit('error', { message: 'Spymasters cannot change teams' });
     return;
   }
 
   // Se o jogo já começou, apenas permitir entrar como operativo (não como spymaster)
-  if (room.gameState === 'playing' && role === 'spymaster') {
+  if (room.gameState === GAME_STATES.PLAYING && role === PLAYER_ROLES.SPYMASTER) {
     socket.emit('error', { message: 'Cannot join as spymaster after game has started' });
     return;
   }
 
   // Verificar se já existe um spymaster neste time
-  if (role === 'spymaster') {
-    if (team === 'red' && room.redSpy) {
+  if (role === PLAYER_ROLES.SPYMASTER) {
+    if (team === TEAMS.RED && room.redSpy) {
       socket.emit('error', { message: 'Red team already has a spymaster' });
       return;
     }
-    if (team === 'blue' && room.blueSpy) {
+    if (team === TEAMS.BLUE && room.blueSpy) {
       socket.emit('error', { message: 'Blue team already has a spymaster' });
       return;
     }
   }
 
   // Remover jogador do time anterior
-  if (player.team === 'red') {
+  if (player.team === TEAMS.RED) {
     room.redTeam = room.redTeam.filter(p => p.id !== socket.id);
-  } else if (player.team === 'blue') {
+  } else if (player.team === TEAMS.BLUE) {
     room.blueTeam = room.blueTeam.filter(p => p.id !== socket.id);
   }
 
@@ -134,20 +154,20 @@ function joinTeam(roomId, socket, team, role) {
   player.role = role;
 
   // Adicionar ao novo time
-  if (team === 'red') {
+  if (team === TEAMS.RED) {
     room.redTeam.push({ id: socket.id, username: player.username, role });
-    if (role === 'spymaster') {
+    if (role === PLAYER_ROLES.SPYMASTER) {
       room.redSpy = socket.id;
     }
-  } else if (team === 'blue') {
+  } else if (team === TEAMS.BLUE) {
     room.blueTeam.push({ id: socket.id, username: player.username, role });
-    if (role === 'spymaster') {
+    if (role === PLAYER_ROLES.SPYMASTER) {
       room.blueSpy = socket.id;
     }
   }
 
   // Se ambos os times têm spymaster e o jogo ainda não começou, iniciar o jogo automaticamente
-  if (room.gameState !== 'playing' && room.redSpy && room.blueSpy) {
+  if (room.gameState !== GAME_STATES.PLAYING && room.redSpy && room.blueSpy) {
     startGame(roomId, socket);
   } else {
     // Broadcast do estado atualizado
@@ -175,7 +195,7 @@ function startGame(roomId, socket) {
     return;
   }
   
-  room.gameState = 'playing';
+  room.gameState = GAME_STATES.PLAYING;
   
   // Notificar todos os jogadores
   io.to(roomId).emit('game-started');
@@ -191,7 +211,7 @@ function endTurn(roomId, socket) {
   }
   
   // Find player in the room
-  const player = room.players.find(p => p.id === socket.id);
+  const player = findPlayerInRoom(room, socket.id);
   if (!player) {
     socket.emit('error', { message: 'Player not found in room' });
     return;
@@ -204,7 +224,7 @@ function endTurn(roomId, socket) {
   }
   
   // Check if player is operative
-  if (player.role !== 'operative') {
+  if (player.role !== PLAYER_ROLES.OPERATIVE) {
     socket.emit('error', { message: 'Only operatives can end turn' });
     return;
   }
@@ -214,7 +234,7 @@ function endTurn(roomId, socket) {
   // baseado no turno atual
   
   // Switch turns
-  room.currentTurn = room.currentTurn === 'red' ? 'blue' : 'red';
+  room.currentTurn = room.currentTurn === TEAMS.RED ? TEAMS.BLUE : TEAMS.RED;
   
   console.log(`Turn switched to ${room.currentTurn}. Current clue remains in history.`);
   
@@ -231,12 +251,12 @@ function resetGame(roomId, socket) {
   }
   
   // Reset game state
-  room.gameState = 'waiting';
+  room.gameState = GAME_STATES.WAITING;
   room.cards = generateCards();
   
   // Determine first team (should be the team with 9 cards)
-  const redCards = room.cards.filter(card => card.team === 'red').length;
-  room.currentTurn = redCards === 9 ? 'red' : 'blue';
+  const redCards = room.cards.filter(card => card.team === TEAMS.RED).length;
+  room.currentTurn = redCards === CARD_DISTRIBUTION.RED ? TEAMS.RED : TEAMS.BLUE;
   
   room.winner = null;
   room.currentClue = null;
@@ -260,10 +280,10 @@ function resetGame(roomId, socket) {
     // Find if player is in red or blue team and reset role
     if (room.redTeam.some(p => p.id === player.id)) {
       player.role = null;
-      player.team = 'red';
+      player.team = TEAMS.RED;
     } else if (room.blueTeam.some(p => p.id === player.id)) {
       player.role = null;
-      player.team = 'blue';
+      player.team = TEAMS.BLUE;
     } else {
       player.role = null;
       player.team = null;
@@ -285,12 +305,12 @@ function returnToLobby(roomId, socket) {
   }
   
   // Reset game state
-  room.gameState = 'waiting';
+  room.gameState = GAME_STATES.WAITING;
   room.cards = generateCards();
   
   // Determine first team (should be the team with 9 cards)
-  const redCards = room.cards.filter(card => card.team === 'red').length;
-  room.currentTurn = redCards === 9 ? 'red' : 'blue';
+  const redCards = room.cards.filter(card => card.team === TEAMS.RED).length;
+  room.currentTurn = redCards === CARD_DISTRIBUTION.RED ? TEAMS.RED : TEAMS.BLUE;
   
   room.winner = null;
   room.currentClue = null;
@@ -316,13 +336,13 @@ function returnToLobby(roomId, socket) {
 function handleCardSelection(socket, cardIndex) {
   // Find which room this socket is in
   for (const [roomId, room] of rooms.entries()) {
-    const player = room.players.find(p => p.id === socket.id);
+    const player = findPlayerInRoom(room, socket.id);
     
     if (player) {
       console.log(`Player ${player.username} selected card ${cardIndex} in room ${roomId}`);
       
       // Check if valid move
-      if (room.gameState !== 'playing') {
+      if (room.gameState !== GAME_STATES.PLAYING) {
         console.log('Invalid move: Game is not in playing state');
         return;
       }
@@ -350,7 +370,7 @@ function handleCardSelection(socket, cardIndex) {
       if (!gameEnded) {
         // Switch turns if card doesn't belong to current team
         if (cardTeam !== room.currentTurn) {
-          room.currentTurn = room.currentTurn === 'red' ? 'blue' : 'red';
+          room.currentTurn = room.currentTurn === TEAMS.RED ? TEAMS.BLUE : TEAMS.RED;
           console.log(`Turn switched to: ${room.currentTurn}`);
         }
         
@@ -371,12 +391,12 @@ function handleDisconnect(socket) {
       const player = room.players[playerIndex];
       
       // Remove from teams if part of one
-      if (player.team === 'red') {
+      if (player.team === TEAMS.RED) {
         room.redTeam = room.redTeam.filter(p => p.id !== socket.id);
         if (room.redSpy === socket.id) {
           room.redSpy = null;
         }
-      } else if (player.team === 'blue') {
+      } else if (player.team === TEAMS.BLUE) {
         room.blueTeam = room.blueTeam.filter(p => p.id !== socket.id);
         if (room.blueSpy === socket.id) {
           room.blueSpy = null;
@@ -408,14 +428,14 @@ function giveClue(roomId, socket, clue, number) {
   }
   
   // Find player in the room
-  const player = room.players.find(p => p.id === socket.id);
+  const player = findPlayerInRoom(room, socket.id);
   if (!player) {
     socket.emit('error', { message: 'Player not found in room' });
     return;
   }
   
   // Check if player is spymaster
-  if (player.role !== 'spymaster') {
+  if (player.role !== PLAYER_ROLES.SPYMASTER) {
     socket.emit('error', { message: 'Only spymasters can give clues' });
     return;
   }
@@ -447,39 +467,28 @@ function generateCards() {
   // Generate cards with correct distribution according to official rules
   const cards = [];
   const teams = [
-    // 9 red cards
-    'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red',
-    // 8 blue cards
-    'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue',
-    // 7 neutral cards
-    'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral',
-    // 1 assassin card
-    'assassin'
+    // Red cards
+    ...Array(CARD_DISTRIBUTION.RED).fill(CARD_TYPES.RED),
+    // Blue cards
+    ...Array(CARD_DISTRIBUTION.BLUE).fill(CARD_TYPES.BLUE),
+    // Neutral cards
+    ...Array(CARD_DISTRIBUTION.NEUTRAL).fill(CARD_TYPES.NEUTRAL),
+    // Assassin card
+    ...Array(CARD_DISTRIBUTION.ASSASSIN).fill(CARD_TYPES.ASSASSIN)
   ];
   
   // Shuffle teams
-  for (let i = teams.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [teams[i], teams[j]] = [teams[j], teams[i]];
-  }
+  const shuffledTeams = shuffleArray(teams);
   
-  // Generate unique random numbers for images between 1-279
-  const usedImageNumbers = new Set();
-  function getUniqueRandomImage() {
-    let imageId;
-    do {
-      imageId = Math.floor(Math.random() * 279) + 1; // 1-279 range
-    } while (usedImageNumbers.has(imageId));
-    usedImageNumbers.add(imageId);
-    return imageId;
-  }
+  // Generate unique random numbers for images
+  const imageIds = [...generateUniqueImageIds(BOARD.TOTAL_CARDS)];
   
   // Create a total of 25 cards (5x5 grid) as per official rules
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < BOARD.TOTAL_CARDS; i++) {
     cards.push({
       id: i,
-      imageId: getUniqueRandomImage(),
-      team: teams[i],
+      imageId: imageIds[i],
+      team: shuffledTeams[i],
       revealed: false
     });
   }
@@ -489,11 +498,11 @@ function generateCards() {
 
 function checkGameEnd(room) {
   // Check if assassin card was revealed
-  const assassinRevealed = room.cards.find(card => card.team === 'assassin' && card.revealed);
+  const assassinRevealed = room.cards.find(card => card.team === CARD_TYPES.ASSASSIN && card.revealed);
   if (assassinRevealed) {
     // Set winner to opposite team of current turn
-    room.winner = room.currentTurn === 'red' ? 'blue' : 'red';
-    room.gameState = 'ended';
+    room.winner = room.currentTurn === TEAMS.RED ? TEAMS.BLUE : TEAMS.RED;
+    room.gameState = GAME_STATES.ENDED;
     
     console.log(`Game ended due to assassin card. Winner: ${room.winner}`);
     
@@ -520,26 +529,20 @@ function checkGameEnd(room) {
         byAssassin: true,
         roomId: room.id // Adicionado o ID da sala para debug
       });
-    }, 500);
+    }, TIMES.GAME_END_NOTIFICATION_DELAY);
     
     return true;
   }
   
   // Check if any team revealed all their cards
-  const redCardsTotal = room.cards.filter(card => card.team === 'red').length;
-  const blueCardsTotal = room.cards.filter(card => card.team === 'blue').length;
-  const redCardsRevealed = room.cards.filter(card => card.team === 'red' && card.revealed).length;
-  const blueCardsRevealed = room.cards.filter(card => card.team === 'blue' && card.revealed).length;
+  const cardsLeft = countRemainingCards(room.cards);
   
   // Update cards left in the room object for the UI
-  room.cardsLeft = {
-    red: redCardsTotal - redCardsRevealed,
-    blue: blueCardsTotal - blueCardsRevealed
-  };
+  room.cardsLeft = cardsLeft;
   
-  if (redCardsRevealed === redCardsTotal) {
-    room.winner = 'red';
-    room.gameState = 'ended';
+  if (cardsLeft.red === 0) {
+    room.winner = TEAMS.RED;
+    room.gameState = GAME_STATES.ENDED;
     
     console.log(`Game ended due to all red cards revealed. Winner: ${room.winner}`);
     
@@ -548,15 +551,15 @@ function checkGameEnd(room) {
     
     // Atrasar o envio do evento game-ended para garantir que o estado do jogo seja processado primeiro
     setTimeout(() => {
-      io.to(room.id).emit('game-ended', { winner: 'red' });
-    }, 500);
+      io.to(room.id).emit('game-ended', { winner: TEAMS.RED });
+    }, TIMES.GAME_END_NOTIFICATION_DELAY);
     
     return true;
   }
   
-  if (blueCardsRevealed === blueCardsTotal) {
-    room.winner = 'blue';
-    room.gameState = 'ended';
+  if (cardsLeft.blue === 0) {
+    room.winner = TEAMS.BLUE;
+    room.gameState = GAME_STATES.ENDED;
     
     console.log(`Game ended due to all blue cards revealed. Winner: ${room.winner}`);
     
@@ -565,8 +568,8 @@ function checkGameEnd(room) {
     
     // Atrasar o envio do evento game-ended para garantir que o estado do jogo seja processado primeiro
     setTimeout(() => {
-      io.to(room.id).emit('game-ended', { winner: 'blue' });
-    }, 500);
+      io.to(room.id).emit('game-ended', { winner: TEAMS.BLUE });
+    }, TIMES.GAME_END_NOTIFICATION_DELAY);
     
     return true;
   }
@@ -576,11 +579,11 @@ function checkGameEnd(room) {
 
 function setUsername(socket, username) {
   // Store the username in the socket data
-  socket.data.username = username || `Player-${socket.id.substr(0, 5)}`;
+  socket.data.username = sanitizeUsername(username, 'Player', socket.id.substr(0, 5));
   
   // Update username in any rooms the player is in
   for (const [roomId, room] of rooms.entries()) {
-    const player = room.players.find(p => p.id === socket.id);
+    const player = findPlayerInRoom(room, socket.id);
     if (player) {
       player.username = socket.data.username;
       
@@ -606,33 +609,33 @@ function setUsername(socket, username) {
 
 // Adicionar função para lidar com saída da sala
 function leaveRoom(socket) {
-    for (const [roomId, room] of rooms.entries()) {
-        const playerIndex = room.players.findIndex(p => p.id === socket.id);
-        if (playerIndex !== -1) {
-            handlePlayerLeave(socket, room, roomId);
-            break;
-        }
+  for (const [roomId, room] of rooms.entries()) {
+    const playerIndex = room.players.findIndex(p => p.id === socket.id);
+    if (playerIndex !== -1) {
+      handlePlayerLeave(socket, room, roomId);
+      break;
     }
+  }
 }
 
 function handlePlayerLeave(socket, room, roomId) {
-    const player = room.players.find(p => p.id === socket.id);
-    if (player.team === 'red') {
-        room.redTeam = room.redTeam.filter(p => p.id !== socket.id);
-        if (room.redSpy === socket.id) room.redSpy = null;
-    } else if (player.team === 'blue') {
-        room.blueTeam = room.blueTeam.filter(p => p.id !== socket.id);
-        if (room.blueSpy === socket.id) room.blueSpy = null;
-    }
-    
-    room.players = room.players.filter(p => p.id !== socket.id);
-    socket.leave(roomId);
-    
-    if (room.players.length === 0) {
-        rooms.delete(roomId);
-    } else {
-        io.to(roomId).emit('game-state', { room });
-    }
+  const player = findPlayerInRoom(room, socket.id);
+  if (player.team === TEAMS.RED) {
+    room.redTeam = room.redTeam.filter(p => p.id !== socket.id);
+    if (room.redSpy === socket.id) room.redSpy = null;
+  } else if (player.team === TEAMS.BLUE) {
+    room.blueTeam = room.blueTeam.filter(p => p.id !== socket.id);
+    if (room.blueSpy === socket.id) room.blueSpy = null;
+  }
+  
+  room.players = room.players.filter(p => p.id !== socket.id);
+  socket.leave(roomId);
+  
+  if (room.players.length === 0) {
+    rooms.delete(roomId);
+  } else {
+    io.to(roomId).emit('game-state', { room });
+  }
 }
 
 // Adicionar uma nova função para lidar com reconexões
@@ -649,7 +652,7 @@ function rejoinRoom(data, socket) {
   }
   
   // Get username from socket data or use default
-  const username = socket.data.username || `Player-${socket.id.substr(0, 5)}`;
+  const username = socket.data.username || sanitizeUsername(null, 'Player', socket.id.substr(0, 5));
   
   console.log(`Player ${username} (${socket.id}) attempting to rejoin room ${roomId} as ${team} ${role}`);
   
@@ -674,7 +677,7 @@ function rejoinRoom(data, socket) {
   }
   
   // Adicionar ao time correto ou atualizar
-  if (team === 'red') {
+  if (team === TEAMS.RED) {
     // Verificar se já existe no time
     const existingIndex = room.redTeam.findIndex(p => p.username === username);
     
@@ -687,10 +690,10 @@ function rejoinRoom(data, socket) {
     }
     
     // Verificar se era spymaster
-    if (role === 'spymaster') {
+    if (role === PLAYER_ROLES.SPYMASTER) {
       room.redSpy = socket.id;
     }
-  } else if (team === 'blue') {
+  } else if (team === TEAMS.BLUE) {
     // Verificar se já existe no time
     const existingIndex = room.blueTeam.findIndex(p => p.username === username);
     
@@ -703,7 +706,7 @@ function rejoinRoom(data, socket) {
     }
     
     // Verificar se era spymaster
-    if (role === 'spymaster') {
+    if (role === PLAYER_ROLES.SPYMASTER) {
       room.blueSpy = socket.id;
     }
   }
@@ -739,11 +742,11 @@ module.exports = {
   startGame,
   endTurn,
   resetGame,
-  returnToLobby,  // Exportar nova função
+  returnToLobby,
   giveClue,
   handleCardSelection,
   handleDisconnect,
   setUsername,
   leaveRoom,
-  rejoinRoom  // Exportar nova função
+  rejoinRoom
 };

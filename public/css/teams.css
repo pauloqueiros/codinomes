@@ -1,122 +1,72 @@
 /* Team-related styles */
 
-/* Team panels */
-.team {
-  width: 48%;
-  padding: 15px;
-  border-radius: 8px;
+/* Team panels - foco principal */
+.team-panel {
+  flex: 0 0 auto;
+  margin-bottom: 15px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ocupar toda a largura da sidebar */
 }
 
-/* Corrigir colisão de estilos para panels */
-.team-panel.card {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 8px;
-  min-height: 0;
-  flex: 1 1 auto; /* Modificado para permitir crescimento */
-  padding-top: 0;
-  height: auto;
-  width: 100%; /* Garantir que ocupe toda a largura disponível */
-}
-
+/* Sidebars mais simples, sem estilos excessivos */
 .team-sidebar {
   display: flex;
   flex-direction: column;
-  width: 180px;
-  height: 100vh;
-  padding: 4px;
+  width: 300px; /* Aumentado para 300px */
+  height: 100%;
   overflow-y: auto;
 }
 
+/* Cabeçalho do painel de equipe */
 .team-panel .card-header {
-  flex-shrink: 0;
-  padding: 8px;
-  min-height: 40px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%; /* Garantir que ocupe toda a largura */
-  margin: 0; /* Remover qualquer margem */
-  border-radius: 0 !important; /* Remover border-radius para preencher toda a largura */
 }
 
+.team-panel.red .card-header {
+  background-color: #dc3545 !important;
+}
+
+.team-panel.blue .card-header {
+  background-color: #007bff !important;
+}
+
+/* Corpo do painel de equipe */
 .team-panel .card-body {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  height: 100%; /* Modificado para usar toda a altura disponível */
-  padding: 8px;
-  flex: 1; /* Permitir que cresça para preencher o espaço */
-}
-
-.team.red {
-  background-color: rgba(231, 76, 60, 0.1);
-  border: 1px solid #e74c3c;
-}
-
-.team.blue {
-  background-color: rgba(52, 152, 219, 0.1);
-  border: 1px solid #3498db;
-}
-
-.team-panel {
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 0;
-}
-
-.team-panel h3 {
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  text-align: center;
+  padding: 10px;
 }
 
 .team-panel.red {
-  background-color: rgba(231, 76, 60, 0.2);
+  background-color: rgba(231, 76, 60, 0.1);
   border-left: 4px solid #e74c3c;
 }
 
 .team-panel.blue {
-  background-color: rgba(52, 152, 219, 0.2);
+  background-color: rgba(52, 152, 219, 0.1);
   border-left: 4px solid #3498db;
 }
 
-/* Team members list */
+/* Lista de membros da equipe - altura fixa para garantir espaço para histórico */
 .team-members {
-  margin-bottom: 6px;
   overflow-y: auto;
   scrollbar-width: thin;
   min-height: 40px;
-  max-height: none; /* Remover limite de altura máxima */
-  height: auto; /* Altura automática */
-  flex: 1 1 auto; /* Permitir que cresça e encolha conforme necessário */
-  padding: 4px;
+  max-height: 150px; /* Altura fixa para garantir espaço para o histórico */
+  padding: 5px 0;
 }
 
-/* Adicionar classe scrollbar-thin para estilizar barras de rolagem */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.5);
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
-}
-
+/* Estilos para membros da equipe */
 .team-member {
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  margin-bottom: 5px;
+  background: #f8f9fa;
   border-radius: 4px;
-  font-size: 0.9em;
+  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -124,240 +74,181 @@
 
 .team-member.spymaster {
   font-weight: bold;
-  background: rgba(0, 0, 0, 0.1);
+  border-left: 3px solid #495057;
+}
+
+.team-member.operative {
+  border-left: 3px solid #ced4da;
 }
 
 .team-member.current-player {
-  border-left: 3px solid #2ecc71;
-  padding-left: 8px;
+  background-color: #e9ecef;
+  box-shadow: 0 0 0 2px #adb5bd;
 }
 
-/* Team status */
+/* Status da equipe */
 .team-status {
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 0.85rem;
-  margin-top: 8px; /* Adicionar espaço acima */
+  margin-top: 8px;
+  padding: 5px 0;
+  border-top: 1px solid #efefef;
 }
 
-/* Team controls */
+/* Controles da equipe */
 .team-controls {
   padding-top: 8px;
-  margin-top: auto; /* Empurra para o final do container */
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Clue history */
+/* Histórico de dicas */
 #clue-history {
-  margin-top: 10px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  padding: 10px;
-  max-height: 200px;
-  overflow-y: auto;
-  margin: 0;
-  height: 100%;
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 6px;
+  min-height: 250px;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 #clue-history h3 {
-  margin-bottom: 10px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 5px;
+  margin: 0;
+  padding: 10px;
+  background: #343a40;
+  color: white;
 }
 
-/* Corrigir clue history para sidebar */
-.sidebar-section.card #clue-history {
-  margin-top: 0;
-  max-height: none;
-  padding: 0;
-}
-
-/* Melhorias para itens do histórico de dicas */
-.clue-history-item {
-  padding: 8px;
-  margin-bottom: 5px;
-  border-radius: 4px;
+/* Ajustes específicos para a sidebar azul com histórico */
+.team-sidebar-blue {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
+  flex-direction: column;
+  gap: 15px; /* Espaço entre o painel e o histórico */
 }
 
-.clue-history-item.red {
-  background-color: rgba(220, 53, 69, 0.1);
-  border-left: 4px solid #e74c3c;
-}
-
-.clue-history-item.blue {
-  background-color: rgba(52, 152, 219, 0.2);
-  border-left: 4px solid #3498db;
-}
-
-/* Destacar a dica mais recente no histórico */
-.clue-history-item.latest-clue {
-  border-width: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-weight: bold;
-  transform: translateY(-2px);
-}
-
-/* Estilos específicos para melhorar a legibilidade da dica atual */
-#current-clue {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-#current-clue.red {
-  background-color: rgba(220, 53, 69, 0.1);
-  border: 1px solid #e74c3c;
-}
-
-#current-clue.blue {
-  background-color: rgba(52, 152, 219, 0.1);
-  border: 1px solid #3498db;
-}
-
-#current-clue.hidden {
-  display: none !important;
-}
-
-.clue-display {
-  text-align: center;
-  font-size: 1.2rem;
-}
-
-.clue-word {
-  font-weight: bold;
-  margin: 0 5px;
-}
-
-.clue-number {
-  font-weight: bold;
-}
-
-.clue-content {
-  font-weight: bold;
-}
-
-.clue-timestamp {
-  color: #7f8c8d;
-  font-size: 0.8em;
-}
-
-.clue-history-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px;
-}
-
-/* Current turn indicator */
+/* Indicator de turno atual */
 .current-turn {
   margin-top: 4px;
   padding: 4px;
   border-radius: 4px;
   text-align: center;
-  color: white;
-  background: #0dcaf0;
-  animation: pulse 2s infinite;
-  font-size: 0.85rem;
+  color: #28a745;
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 0.8;
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .team-sidebar {
+    width: 220px;
+    padding: 8px;
   }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.8;
+  
+  .team-members {
+    max-height: 120px;
   }
 }
 
-/* Game instructions */
-.game-instructions ul {
-  padding-left: 15px;
-  font-size: 0.9em;
-}
-
-.game-instructions li {
-  margin-bottom: 8px;
-}
-
-/* Ajuste para mobile */
 @media (max-width: 767px) {
   .team-sidebar {
     max-height: 130px;
     padding: 4px;
-  }
-  
-  .team-panel.card {
-    min-height: auto;
-    max-height: 120px;
-    margin: 0 4px;
-  }
-
-  .team-members {
-    min-height: 20px;
-    max-height: 50px;
-    margin-bottom: 2px;
-  }
-  
-  .team-member {
-    padding: 2px 4px;
-    margin-bottom: 2px;
-    font-size: 0.8em;
-  }
-  
-  .team-controls {
-    padding-top: 2px;
-  }
-  
-  .team-controls .btn {
-    padding: 2px 4px;
-    font-size: 0.75rem;
-  }
-  
-  .team-status {
-    max-height: 20px;
-    overflow: hidden;
-    font-size: 0.7rem;
-  }
-}
-
-/* Escala específica para cabeçalho de panel */
-@media (max-width: 991px) {
-  .team-panel .card-header {
-    padding: 4px;
+    width: 180px;
   }
   
   .team-panel .card-header h3 {
     font-size: 0.9rem;
-    margin: 0;
-    line-height: 1.2;
+  }
+  
+  .team-members {
+    max-height: 80px;
+  }
+  
+  #clue-history {
+    min-height: 120px;
   }
 }
 
-/* Ajustes para telas médias */
+/* Responsive styles for teams */
+@media (min-width: 1401px) {
+  .team-sidebar {
+    width: 300px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1400px) {
+  .team-sidebar {
+    width: 280px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+  .team-sidebar {
+    width: 260px;
+  }
+  
+  .sidebar-section {
+    padding: 8px;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   .team-sidebar {
-    width: 140px;
+    width: 240px;
+  }
+  
+  .team-member {
+    font-size: 0.8em;
+    padding: 3px;
+  }
+}
+
+@media (max-width: 767px) {
+  .team-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    flex-direction: row;
+    margin-bottom: 8px;
+    padding: 4px;
+  }
+
+  .team-panel.card {
+    flex: 1;
+    margin: 0 4px;
+    min-height: 100px;
+    max-height: 120px;
+  }
+
+  .team-members {
+    max-height: 55px;
+  }
+}
+
+@media (max-width: 575px) {
+  .team-sidebar {
+    max-height: none;
+    flex-direction: row;
+    height: auto;
   }
   
   .team-panel.card {
-    margin-bottom: 6px;
+    width: 48%;
+    margin-right: 2%;
   }
   
-  .team-panel .card-body {
-    padding: 6px;
+  .team-members {
+    max-height: 50px;
   }
 }

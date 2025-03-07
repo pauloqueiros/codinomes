@@ -3,6 +3,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const gameManager = require('./gameManager');
+const { TIMES } = require('./constants');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,10 +12,10 @@ const io = socketIo(server);
 // Inicializar gameManager com io
 gameManager.initialize(io);
 
-// Serve static files
+// Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Set MIME type for .js files and define CORS headers
+// Definir tipo MIME para arquivos .js e definir cabeçalhos CORS
 app.use((req, res, next) => {
   if (req.url.endsWith('.js')) {
     res.type('application/javascript');
@@ -32,30 +33,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// Rotas
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Socket.io connection handling
+// Gerenciamento de conexão Socket.io
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('Usuário conectado:', socket.id);
   
-  // Handle username setting
+  // Lidar com definição de nome de usuário
   socket.on('set-username', (username) => {
-    const sanitizedUsername = typeof username === 'string' ? 
-        username.trim().substring(0, 15) : // Limit length and trim if it's a string
-        `Player_${socket.id.substr(0, 5)}`; // Fallback if username is not a string
-    const setName = gameManager.setUsername(socket, sanitizedUsername);
+    const setName = gameManager.setUsername(socket, username);
     socket.emit('username-set', { username: setName });
   });
   
-  // Handle room creation
+  // Lidar com criação de sala
   socket.on('create-room', (roomId) => {
     gameManager.createRoom(roomId, socket);
   });
   
-  // Handle room joining
+  // Lidar com entrada em sala
   socket.on('join-room', (roomId) => {
     gameManager.joinRoom(roomId, socket);
   });
@@ -65,37 +63,37 @@ io.on('connection', (socket) => {
     gameManager.rejoinRoom(data, socket);
   });
   
-  // Handle team joining
+  // Lidar com entrada em equipe
   socket.on('join-team', (data) => {
     gameManager.joinTeam(data.room, socket, data.team, data.role);
   });
   
-  // Handle game start
+  // Lidar com início do jogo
   socket.on('start-game', (data) => {
     gameManager.startGame(data.room, socket);
   });
   
-  // Handle clues from spymaster
+  // Lidar com dicas do mestre-espião
   socket.on('give-clue', (data) => {
     gameManager.giveClue(data.room, socket, data.clue, data.number);
   });
   
-  // Handle end turn
+  // Lidar com fim de turno
   socket.on('end-turn', (data) => {
     gameManager.endTurn(data.room, socket);
   });
   
-  // Handle play again
+  // Lidar com jogar novamente
   socket.on('play-again', (data) => {
     gameManager.resetGame(data.room, socket);
   });
   
-  // Handle return to lobby
+  // Lidar com retorno ao lobby
   socket.on('return-to-lobby', (data) => {
     gameManager.returnToLobby(data.room, socket);
   });
   
-  // Handle card selection
+  // Lidar com seleção de carta
   socket.on('select-card', (cardIndex) => {
     gameManager.handleCardSelection(socket, cardIndex);
   });
@@ -105,19 +103,19 @@ io.on('connection', (socket) => {
     gameManager.leaveRoom(socket);
   });
   
-  // Handle reset game
+  // Lidar com reinicialização do jogo
   socket.on('reset-game', (data) => {
     gameManager.resetGame(data.room, socket);
   });
   
-  // Handle disconnect
+  // Lidar com desconexão
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log('Usuário desconectado:', socket.id);
     gameManager.handleDisconnect(socket);
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });

@@ -1,39 +1,39 @@
 /* Card styles */
 
-/* Corrigir colisão de estilos com bootstrap - ajustar proporção para evitar corte */
+/* Base card style */
 #game-board .card {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* Reduzido de 100% para 90% para diminuir a altura */
-  border-radius: 15px !important;
+  padding-top: 100%; /* Manter proporção quadrada */
+  border-radius: 8px !important;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s, box-shadow 0.3s;
-  min-height: 0;
-  border: 5px solid white !important;
-  display: block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 3px solid white !important;
   margin: 0;
   background: none;
 }
 
+/* Card inner with image - Ajustado para melhor controle do tamanho */
 .card-inner {
   position: absolute;
-  top: 0; /* Corrigido de -15 para 0 */
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 10px; /* Arredondado */
-  z-index: 1; /* Garantir que a imagem fique acima de outros elementos */
-}
+  /* border-radius: 4px; */
+  padding: 4px; /* Adicionado padding para evitar que a imagem toque as bordas */
+  }
 
+/* Card hover effect */
 #game-board .card:hover {
-  transform: translateY(-5px) rotate(2deg); /* Adicionado rotate para efeito divertido */
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-  z-index: 10; /* Bring card to front on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
 /* Card team indicators */
@@ -170,4 +170,61 @@ body:not(.spymaster-view) #game-board .card:not(.revealed) {
 /* Para spymasters, bordas coloridas (conforme o time) */
 body.spymaster-view #game-board .card {
   border-width: 5px !important;
+}
+
+/* Responsive styles apenas para cards */
+@media (min-width: 1401px) {
+  #game-board .card {
+    border-width: 3px !important;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1400px) {
+  #game-board .card {
+    border-width: 3px !important;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+  #game-board .card {
+    border-width: 3px !important;
+  }
+}
+
+@media (max-width: 991px) {
+  #game-board .card {
+    border-width: 2px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  #game-board .card {
+    padding-top: 100%;
+  }
+  
+  .card-inner {
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  #game-board .card {
+    border-width: 2px !important;
+    border-radius: 4px !important;
+  }
+  
+  .card-inner {
+    border-radius: 2px;
+  }
+}
+
+@media (max-width: 575px) {
+  #game-board .card {
+    padding-top: 100%;
+    border-radius: 8px;
+  }
+  
+  .card-inner {
+    border-radius: 6px;
+  }
 }

@@ -1,46 +1,49 @@
-<div id="game-screen" class="screen container-fluid pt-3 px-3 hidden">
+<div id="game-screen" class="screen container-fluid pt-3 hidden">
   <div class="game-layout">
     <!-- Left sidebar: Red team -->
-    <div class="team-sidebar team-sidebar-red shadow-sm">
-      <!-- Team panel will be loaded here -->
-      <div id="clue-history" class="sidebar-section card mt-2">
-        <div class="card-header bg-secondary text-white py-2">
+    <div class="team-sidebar team-sidebar-red">
+      <div id="red-team-container" class="team-panel-container"></div>
+    </div>
+    
+    <!-- Center area -->
+    <div class="game-center-container">
+      <!-- Spymaster controls -->
+      <div id="spymaster-controls" class="spymaster-controls hidden">
+        <div class="input-group">
+          <input type="text" id="clue-input" class="form-control" placeholder="Enter clue...">
+          <input type="number" id="clue-number-input" class="form-control" value="1" min="0" max="9">
+          <button id="submit-clue-btn" class="btn btn-primary">Give Clue</button>
+        </div>
+      </div>
+
+      <!-- Current clue -->
+      <div id="current-clue" class="current-clue hidden">
+        <div class="clue-display">
+          <span class="clue-label">Current Clue:</span>
+          <span id="clue-text" class="clue-word">Word</span>
+          <span class="clue-dash">-</span>
+          <span id="clue-number" class="clue-number">0</span>
+        </div>
+        <div class="operative-control">
+          <button id="end-turn-btn" class="btn btn-warning hidden">End Turn</button>
+        </div>
+      </div>
+
+      <!-- Game board -->
+      <div id="game-center"></div>
+    </div>
+    
+    <!-- Right sidebar: Blue team -->
+    <div class="team-sidebar team-sidebar-blue">
+      <div id="blue-team-container" class="team-panel-container"></div>
+      <div id="clue-history" class="sidebar-section card">
+        <div class="card-header bg-secondary text-white">
           <h3 class="h5 mb-0">Clue History</h3>
         </div>
-        <div class="card-body p-2">
+        <div class="card-body">
           <div id="clue-history-list" class="small"></div>
         </div>
       </div>
-    </div>
-    
-    <!-- Área de controles do spymaster -->
-    <div id="spymaster-controls" class="spymaster-controls hidden">
-      <div class="input-group">
-        <input type="text" id="clue-input" class="form-control form-control-lg" placeholder="Enter clue...">
-        <input type="number" id="clue-number-input" class="form-control form-control-lg" value="1" min="0" max="9">
-        <button id="submit-clue-btn" class="btn btn-primary">Give Clue</button>
-      </div>
-    </div>
-
-    <!-- Área de dica atual -->
-    <div id="current-clue" class="current-clue hidden">
-      <div class="clue-display">
-        <span class="clue-label">Current Clue:</span>
-        <span id="clue-text" class="clue-word">Word</span>
-        <span class="clue-dash">-</span>
-        <span id="clue-number" class="clue-number">0</span>
-      </div>
-      <!-- Botão de finalizar turno apenas para operativos -->
-      <div class="operative-control">
-        <button id="end-turn-btn" class="btn btn-warning hidden">End Turn</button>
-      </div>
-    </div>
-
-    <!-- Game board component will be loaded here -->
-    
-    <!-- Right sidebar: Blue team -->
-    <div class="team-sidebar team-sidebar-blue shadow-sm">
-      <!-- Team panel will be loaded here -->
     </div>
   </div>
 </div>
