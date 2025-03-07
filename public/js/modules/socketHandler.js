@@ -18,7 +18,7 @@ export function setupSocketHandlers(socket, elements, screens) {
   
   // Conexão estabelecida
   socket.on('connect', () => {
-    console.log('Connected to server with socket ID:', socket.id);
+    console.log('Conectado ao servidor com ID de socket:', socket.id);
     gameState.playerId = socket.id;
     
     // Definir username antes de tentar reconexão
@@ -30,9 +30,9 @@ export function setupSocketHandlers(socket, elements, screens) {
     }, 300);
   });
   
-  // Handle para reconexão bem-sucedida
+  // Handler para reconexão bem-sucedida
   socket.on('room-rejoined', (data) => {
-    console.log('Successfully rejoined room:', data);
+    console.log('Reconectado com sucesso à sala:', data);
     gameState.currentRoom = data.roomId;
     gameState.playerTeam = data.team;
     gameState.playerRole = data.role;
@@ -43,27 +43,27 @@ export function setupSocketHandlers(socket, elements, screens) {
     
     try {
       showScreen(screens.game, screens);
-      notify.success(`Welcome back! You've rejoined the game as ${data.role} in the ${data.team} team.`, 'Game Restored');
-      console.log(`Successfully rejoined room ${data.roomId}`);
+      notify.success(`Bem-vindo novamente! Você voltou ao jogo como ${data.role === 'spymaster' ? 'espião-mestre' : 'operativo'} no time ${data.team === 'red' ? 'vermelho' : 'azul'}.`, 'Jogo Restaurado');
+      console.log(`Reconectado com sucesso à sala ${data.roomId}`);
     } catch (error) {
-      console.error('Error handling room-rejoined:', error);
+      console.error('Erro ao processar room-rejoined:', error);
     }
   });
   
   // Username configurado
   socket.on('username-set', (data) => {
     gameState.username = data.username;
-    console.log('Username set to:', data.username);
+    console.log('Nome de usuário definido para:', data.username);
     saveGameSession();
   });
   
   // Mensagem de erro
   socket.on('error', (data) => {
-    console.error('Received error from server:', data);
+    console.error('Erro recebido do servidor:', data);
     
     // Se for erro de reconexão, limpar sessão
     if (data.type === 'rejoin-error') {
-      console.log('Rejoin error, clearing session');
+      console.log('Erro de reconexão, limpando sessão');
       clearGameSession();
     }
     
@@ -74,8 +74,8 @@ export function setupSocketHandlers(socket, elements, screens) {
       
       // Exibir notificação personalizada
       notify.error(
-        'The room you tried to join does not exist. Please create a new game.',
-        'Room Not Found'
+        'A sala que você tentou acessar não existe. Por favor, crie um novo jogo.',
+        'Sala Não Encontrada'
       );
       
       clearGameSession();
@@ -84,39 +84,39 @@ export function setupSocketHandlers(socket, elements, screens) {
     }
     
     // Mostrar outras mensagens de erro com notificação
-    notify.error(data.message, 'Error');
+    notify.error(data.message, 'Erro');
   });
   
   // Sala criada
   socket.on('room-created', (data) => {
     gameState.currentRoom = data.roomId;
     try {
-      console.log("Room created event received. Showing game screen...");
+      console.log("Evento de sala criada recebido. Mostrando tela de jogo...");
       
       // Verificar se a tela do jogo existe
       if (!screens.game) {
-        console.error("Game screen not found in screens object");
+        console.error("Tela de jogo não encontrada no objeto screens");
         // Tentar buscar diretamente
         screens.game = document.getElementById('game-screen-container');
         if (!screens.game) {
-          console.error("Could not find game screen by ID");
+          console.error("Não foi possível encontrar a tela de jogo pelo ID");
           return;
         }
       }
       
       // Verificar screens antes de chamar showScreen
-      console.log("Screens object:", Object.keys(screens));
+      console.log("Objeto screens:", Object.keys(screens));
       
       // Mostrar a tela do jogo
       showScreen(screens.game, screens);
-      console.log("Game screen should now be visible");
+      console.log("A tela de jogo agora deve estar visível");
       
       saveGameSession();
       
       // Substituir o elemento temporário por uma notificação
       showShareNotification(data.roomId);
     } catch (error) {
-      console.error('Error handling room-created:', error);
+      console.error('Erro ao processar room-created:', error);
     }
   });
   
@@ -124,7 +124,7 @@ export function setupSocketHandlers(socket, elements, screens) {
   socket.on('room-joined', (data) => {
     gameState.currentRoom = data.roomId;
     try {
-      console.log("Room joined event received:", data);
+      console.log("Evento de sala acessada recebido:", data);
       
       // Garantir que qualquer modal anterior seja removido
       const existingModal = document.querySelector('.username-modal');
@@ -136,7 +136,7 @@ export function setupSocketHandlers(socket, elements, screens) {
       const fromDirectLink = new URLSearchParams(window.location.search).has('room');
       const hasUsername = !!gameState.username;
       
-      console.log('Room joined - fromDirectLink:', fromDirectLink, 'hasUsername:', hasUsername);
+      console.log('Sala acessada - por link direto:', fromDirectLink, 'tem nome de usuário:', hasUsername);
       
       if (!hasUsername || fromDirectLink) {
         // Solicitar username antes de mostrar a tela do jogo
@@ -144,22 +144,22 @@ export function setupSocketHandlers(socket, elements, screens) {
       } else {
         // Verificar se screens.game existe
         if (!screens.game) {
-          console.error("Game screen not found");
+          console.error("Tela de jogo não encontrada");
           screens.game = document.getElementById('game-screen-container');
           if (!screens.game) {
-            console.error("Could not find game screen in DOM");
+            console.error("Não foi possível encontrar a tela de jogo no DOM");
             return;
           }
         }
         
         // Se já tem username, mostrar a tela do jogo normalmente
-        console.log("Showing game screen...");
+        console.log("Mostrando tela de jogo...");
         showScreen(screens.game, screens);
         
         saveGameSession();
         
         // Notificar o usuário
-        notify.success(`You've joined room ${data.roomId}`, 'Room Joined');
+        notify.success(`Você entrou na sala ${data.roomId}`, 'Sala Acessada');
         
         // Atualizar URL com o roomId para facilitar reconexões
         import('./urlManager.js').then(({ updateUrlWithRoom }) => {
@@ -167,18 +167,18 @@ export function setupSocketHandlers(socket, elements, screens) {
         });
       }
     } catch (error) {
-      console.error('Error handling room-joined:', error);
+      console.error('Erro ao processar room-joined:', error);
     }
   });
   
   // Jogador entrou na sala
   socket.on('player-joined', (data) => {
-    console.log(`Player ${data.playerId} joined the room`);
+    console.log(`Jogador ${data.playerId} entrou na sala`);
   });
   
   // Jogador saiu da sala
   socket.on('player-left', (data) => {
-    console.log(`Player ${data.playerId} left the room`);
+    console.log(`Jogador ${data.playerId} saiu da sala`);
     // Se o jogador atual saiu, limpa a sessão
     if (data.playerId === gameState.playerId) {
       clearGameSession();
@@ -190,7 +190,7 @@ export function setupSocketHandlers(socket, elements, screens) {
     try {
       updateGameState(data.room, elements, screens);
     } catch (error) {
-      console.error('Error updating game state:', error);
+      console.error('Erro ao atualizar estado do jogo:', error);
     }
   });
   
@@ -199,25 +199,25 @@ export function setupSocketHandlers(socket, elements, screens) {
     try {
       showScreen(screens.game, screens);
     } catch (error) {
-      console.error('Error handling game-started:', error);
+      console.error('Erro ao processar game-started:', error);
     }
   });
   
   // Jogo encerrado
   socket.on('game-ended', (data) => {
     try {
-      console.log('Game ended event received:', data);
+      console.log('Evento de fim de jogo recebido:', data);
       
       // SOLUÇÃO DE EMERGÊNCIA: Criar elemento da tela final dinamicamente se não existir
       let endScreen = screens.end;
       
       if (!endScreen) {
-        console.warn('End screen not found in screens object, creating fallback');
+        console.warn('Tela final não encontrada no objeto screens, criando fallback');
         endScreen = document.getElementById('end-screen-container');
         
         if (!endScreen) {
           // Se ainda não encontrou, criar um elemento de forma emergencial
-          console.warn('Creating emergency end screen element');
+          console.warn('Criando elemento de tela final de emergência');
           endScreen = document.createElement('div');
           endScreen.id = 'emergency-end-screen';
           endScreen.className = 'container py-5';
@@ -229,14 +229,14 @@ export function setupSocketHandlers(socket, elements, screens) {
               <div class="col-md-8">
                 <div class="card shadow">
                   <div class="card-body text-center">
-                    <h1 class="display-4 mb-4" id="emergency-winner-display">${data.winner.toUpperCase()} TEAM WINS!</h1>
+                    <h1 class="display-4 mb-4" id="emergency-winner-display">TIME ${data.winner.toUpperCase() === 'RED' ? 'VERMELHO' : 'AZUL'} VENCE!</h1>
                     
                     <div class="mt-4">
                       <button id="emergency-play-again-btn" class="btn btn-success btn-lg me-3">
-                        <i class="fas fa-redo me-2"></i>Play Again
+                        <i class="fas fa-redo me-2"></i>Jogar Novamente
                       </button>
                       <button id="emergency-return-btn" class="btn btn-primary btn-lg">
-                        <i class="fas fa-home me-2"></i>Return to Lobby
+                        <i class="fas fa-home me-2"></i>Voltar ao Lobby
                       </button>
                     </div>
                   </div>
@@ -266,16 +266,18 @@ export function setupSocketHandlers(socket, elements, screens) {
       // Mostrar a tela de fim de jogo
       if (endScreen) {
         endScreen.classList.remove('d-none');
-        console.log('End screen displayed');
+        console.log('Tela final exibida');
       }
       
       // Notificar sobre o final do jogo
-      notify.success(`Game Over! ${data.winner.toUpperCase()} team wins!`, 'Game Ended');
+      const winnerTeam = data.winner === 'red' ? 'VERMELHO' : 'AZUL';
+      notify.success(`Fim de jogo! Time ${winnerTeam} venceu!`, 'Jogo Finalizado');
     } catch (error) {
-      console.error('Error handling game-ended:', error, error.stack);
+      console.error('Erro ao processar game-ended:', error, error.stack);
       
       // FALLBACK EXTREMO: Mostrar alerta no caso de erro catastrófico
-      alert(`Game over! ${data.winner.toUpperCase()} team wins! Click OK to play again.`);
+      const winnerTeam = data.winner === 'red' ? 'VERMELHO' : 'AZUL';
+      alert(`Fim de jogo! Time ${winnerTeam} venceu! Clique OK para jogar novamente.`);
       socket.emit('play-again', { room: gameState.currentRoom });
     }
   });
@@ -283,7 +285,7 @@ export function setupSocketHandlers(socket, elements, screens) {
   // Handler para reset do jogo (jogar novamente)
   socket.on('game-reset', (data) => {
     try {
-      console.log('Game reset received:', data);
+      console.log('Reset de jogo recebido:', data);
       
       // Limpar cargo do jogador mas manter no time
       gameState.playerRole = null;
@@ -296,16 +298,16 @@ export function setupSocketHandlers(socket, elements, screens) {
       showScreen(screens.game, screens);
       
       // Notificar o usuário
-      notify.success('Game has been reset. Choose your role to play again!', 'New Game');
+      notify.success('O jogo foi reiniciado. Escolha sua função para jogar novamente!', 'Novo Jogo');
     } catch (error) {
-      console.error('Error handling game-reset:', error);
+      console.error('Erro ao processar game-reset:', error);
     }
   });
   
   // Handler para retornar ao lobby
   socket.on('return-to-lobby', (data) => {
     try {
-      console.log('Return to lobby received:', data);
+      console.log('Retorno ao lobby recebido:', data);
       
       // Limpar time e cargo do jogador
       gameState.playerTeam = null;
@@ -319,9 +321,9 @@ export function setupSocketHandlers(socket, elements, screens) {
       showScreen(screens.game, screens);
       
       // Notificar o usuário
-      notify.success('Returned to lobby. Choose a team to play!', 'Game Lobby');
+      notify.success('Voltou para o lobby. Escolha um time para jogar!', 'Lobby do Jogo');
     } catch (error) {
-      console.error('Error handling return-to-lobby:', error);
+      console.error('Erro ao processar return-to-lobby:', error);
     }
   });
 }
@@ -338,7 +340,7 @@ function attemptReconnection(socket, screens) {
     const maxAge = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
     
     if (sessionAge < maxAge) {
-      console.log('Attempting to reconnect to previous game session:', savedSession);
+      console.log('Tentando reconectar à sessão anterior de jogo:', savedSession);
       
       // Verificar se temos todos os dados necessários
       if (savedSession.room && savedSession.team && savedSession.role) {
@@ -349,12 +351,12 @@ function attemptReconnection(socket, screens) {
           role: savedSession.role
         });
       } else {
-        console.warn('Incomplete session data, cannot reconnect', savedSession);
+        console.warn('Dados de sessão incompletos, não é possível reconectar', savedSession);
         clearGameSession();
       }
     } else {
       // Sessão muito antiga, limpar
-      console.log('Session too old, clearing');
+      console.log('Sessão muito antiga, limpando');
       clearGameSession();
     }
   }
@@ -364,7 +366,7 @@ function attemptReconnection(socket, screens) {
 function updateGameState(room, elements, screens) {
   // Verificar se o estado do jogo é válido
   if (!room) {
-    console.error('Invalid room data received');
+    console.error('Dados de sala inválidos recebidos');
     return;
   }
   
@@ -393,17 +395,17 @@ function showShareNotification(roomId) {
     // Copiar link para área de transferência e mostrar notificação
     copyToClipboard(shareUrl).then(success => {
       const message = success ? 
-        `Link copied to clipboard: ${shareUrl}` : 
-        `Share this link with friends: ${shareUrl}`;
+        `Link copiado para a área de transferência: ${shareUrl}` : 
+        `Compartilhe este link com amigos: ${shareUrl}`;
       
-      notify.success(message, 'Game Created!', 10000);
+      notify.success(message, 'Jogo Criado!', 10000);
     });
   });
 }
 
 /**
  * Mostra um modal para o usuário escolher seu username
- * @param {object} socket - Socket.io client
+ * @param {object} socket - Cliente Socket.io
  * @param {string} roomId - ID da sala
  * @param {object} screens - Referências para as telas do jogo
  */
@@ -419,46 +421,46 @@ function promptForUsername(socket, roomId, screens) {
   modal.className = 'username-modal';
   modal.innerHTML = `
     <div class="username-modal-content">
-      <h3>Choose Your Codename</h3>
-      <p>Before joining the game, please choose a username:</p>
+      <h3>Escolha Seu Codinome</h3>
+      <p>Antes de entrar no jogo, por favor escolha um nome de usuário:</p>
       <div class="form-group mb-3">
         <input type="text" id="modal-username-input" class="form-control" 
-               placeholder="Enter your codename" maxlength="15">
+               placeholder="Digite seu codinome" maxlength="15">
       </div>
       <button id="modal-username-submit" class="btn btn-primary w-100">
-        <i class="fas fa-sign-in-alt me-2"></i>Join Game
+        <i class="fas fa-sign-in-alt me-2"></i>Entrar no Jogo
       </button>
     </div>
   `;
   
   // Adicionar estilos inline para garantir que o modal funcione
   modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1050;
-    backdrop-filter: blur(5px);
-  `;
-  
-  // Estilizar o conteúdo do modal
-  const modalContent = modal.querySelector('.username-modal-content');
-  modalContent.style.cssText = `
-    background-color: white;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 400px;
-    animation: modal-slide-in 0.3s ease;
-  `;
-  
-  // Adicionar o modal ao body
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  backdrop-filter: blur(5px);
+`;
+
+// Estilizar o conteúdo do modal
+const modalContent = modal.querySelector('.username-modal-content');
+modalContent.style.cssText = `
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  animation: modal-slide-in 0.3s ease;
+`;
+
+// Adicionar o modal ao body
   document.body.appendChild(modal);
   
   // Focar o input
@@ -502,17 +504,17 @@ function promptForUsername(socket, roomId, screens) {
       saveGameSession();
       
       // Notificar o usuário
-      notify.success(`You've joined room ${roomId} as ${username}`, 'Room Joined');
+      notify.success(`Você entrou na sala ${roomId} como ${username}`, 'Sala Acessada');
     } else {
-      // Shake animation no input para indicar erro
+      // Adiciona classe de animação de shake
       usernameInput.classList.add('shake-animation');
       setTimeout(() => usernameInput.classList.remove('shake-animation'), 500);
       
-      notify.warning('Please enter a username', 'Username Required');
+      notify.warning('Por favor, digite um nome de usuário', 'Nome Necessário');
     }
   }
   
-  // Adicionar estilo da animação ao head
+  // Adicionar referência às animações que devem estar definidas em CSS
   const style = document.createElement('style');
   style.textContent = `
     @keyframes modal-slide-in {
